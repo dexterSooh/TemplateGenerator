@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<codes>
+	<new_programId_query>
+	<![CDATA[
+    --'WEB0101' 기준으로 한 신규 id => WEB0101**
+    SELECT CONCAT('WEB0101', 
+    (select REPLACE((SELECT MAX(PROGRAM_ID) FROM TB_COR_PROGRAM
+    WHERE PROGRAM_TYPE = 'MES_WEB'
+    and program_id like 'WEB0101%'
+    ), 'WEB0101', '') + 1 from dual
+    )) id FROM DUAL    
+    ]]>
+	</new_programId_query>
+	<add_programId_query>
+	<![CDATA[
+    --Program id 등록 **주의 PROGRAM_PATH**
+    INSERT INTO TB_COR_PROGRAM
+    (
+      PROGRAM_ID
+    , PROGRAM_ID_PR
+    , PROGRAM_NAME
+    , PROGRAM_DESC
+    , PROGRAM_SORT_NO
+    , PROGRAM_LEVEL
+    , PROGRAM_PATH
+    , PROGRAM_TYPE
+    , PROGRAM_PARAMETER
+    , NAMESPACE
+    , NO_POPUP_FLAG
+    , PROGRAM_USE_FLAG
+    , CREATION_USER_ID
+    , CREATION_DATE
+    , LAST_UPDATE_USER_ID
+    , LAST_UPDATE_DATE
+    , AUTO_CREATION_FLAG
+    , CONFIGURABLE_UI_FLAG
+    )
+    VALUES
+    (
+      'NEW_PROGRAM_ID' --PROGRAM_ID
+    , 'WEB010100' --PROGRAM_ID_PR
+    , 'ko-KR\UI_{0}|zh-CN\UI_{0}|en-US\UI_{0}' --PROGRAM_NAME
+    , 'UI_{0}' --PROGRAM_DESC
+    , '10' --PROGRAM_SORT_NO
+    , '3' --PROGRAM_LEVEL
+    , 'mes/production/{0}/{0}Container' --PROGRAM_PATH
+    , 'MES_WEB'--PROGRAM_TYPE
+    , ''--PROGRAM_PARAMETER
+    , ''--NAMESPACE
+    , ''--NO_POPUP_FLAG
+    , 'Y'--PROGRAM_USE_FLAG
+    , 'admin'--CREATION_USER_ID
+    , sysdate--CREATION_DATE
+    , 'admin'--LAST_UPDATE_USER_ID
+    , sysdate--LAST_UPDATE_DATE
+    , ''--AUTO_CREATION_FLAG
+    , ''--CONFIGURABLE_UI_FLAG
+    )
+    ]]>
+	</add_programId_query>
+	<add_auth_query>
+	<![CDATA[
+    --권한 등록
+    insert into TB_MMD_ORG_USR_CLASS_AUTH_N
+    values ('255300','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
+
+    insert into TB_MMD_ORG_USR_CLASS_AUTH_N
+    values ('255301','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
+
+    insert into TB_MMD_ORG_USR_CLASS_AUTH_N
+    values ('255302','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
+
+    insert into TB_MMD_ORG_USR_CLASS_AUTH_N
+    values ('255303','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
+
+    insert into TB_MMD_ORG_USR_CLASS_AUTH_N
+    values ('255305','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
+
+    insert into TB_MMD_ORG_USR_CLASS_AUTH_N
+    values ('260330','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
+
+    insert into TB_MMD_ORG_USR_CLASS_AUTH_N
+    values ('280386','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
+
+    insert into TB_MMD_ORG_USR_CLASS_AUTH_N
+    values ('304056','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
+    ]]>
+	</add_auth_query>
+    <controller_code>
+	    <![CDATA[
+    package com.lg.mes.production;
+
+    import lombok.extern.slf4j.Slf4j;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.web.bind.annotation.PostMapping;
+    import org.springframework.web.bind.annotation.RequestBody;
+    import org.springframework.web.bind.annotation.RestController;
+
+    import java.util.Map;
+
+    @RestController
+    @Slf4j
+    public class {0}Controller {{
+        @Autowired
+        {0}Service service;
+
+    
+    }}
+    ]]>
+    </controller_code>
+    <service_code>
+	    <![CDATA[
+    package com.lg.mes.production;
+
+    import org.springframework.http.ResponseEntity;
+
+    import java.util.Map;
+	
+    public interface {0}Service {{
+	/* 
+        ResponseEntity Temp1(Map<String, Object> params) throws Exception;
+        ResponseEntity Temp2(String param) throws Exception;    
+	*/
+    }}
+    ]]>
+    </service_code>
+    <implement_code>
+	    <![CDATA[
+    package com.lg.mes.production;
+
+    import com.lg.common.solace.SolaceService;
+    import com.lg.common.util.CommonUtil;
+    import lombok.extern.slf4j.Slf4j;
+    import org.slf4j.MDC;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.stereotype.Service;
+
+    import java.text.SimpleDateFormat;
+    import java.util.HashMap;
+    import java.util.Map;
+
+    @Service
+    @Slf4j
+    public class {0}ServiceImpl implements {0}Service {{
+
+        @Autowired
+        private SolaceService solaceService;
+
+		/*
+        @Override
+        public ResponseEntity Temp1(String param) throws Exception {{
+            Map<String,Object> inData = new HashMap<>();
+            inData.put("LANGUAGE_ID", MDC.get("userLangID"));
+            inData.put("SCHEDULE_GROUP_ID", param);
+
+            Map<String,Object> result =
+                    solaceService.bizActorRequestMap(
+                            inData,
+                            "IN_DATA",
+                            "OUT_DATA",
+                            "BR_MMD_WipLineM_SelectCombo");
+
+            return CommonUtil.successResponseData(result);
+        }}
+		*/
+    }}
+    ]]>
+    </implement_code>
+</codes>
