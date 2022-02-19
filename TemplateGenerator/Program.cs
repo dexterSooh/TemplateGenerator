@@ -9,15 +9,14 @@ static void Start()
 {
     var type = ReceiveType();
 
+    //기본 경로 지정
+    var root = "MenuTemplate";
+    var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
     if (type == "1")
     {
         var programName = ReceiveName();
 
         var processor = new Processor();
-
-        //기본 경로 지정
-        var root = "MenuTemplate";
-        var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
         var desktopRoot = Path.Combine(path, root);
         if (!Directory.Exists(desktopRoot))
@@ -33,13 +32,28 @@ static void Start()
 
     if (type == "2")
     {
+        var programName = ReceiveName();
+        var desktopRoot = Path.Combine(path, root);
+        if (!Directory.Exists(desktopRoot))
+            Directory.CreateDirectory(desktopRoot);
 
+        var programNamePath = Path.Combine(desktopRoot, programName);
+        if (!Directory.Exists(programNamePath))
+            Directory.CreateDirectory(programNamePath);
+
+        var FEPath = Path.Combine(programNamePath, "FE");
+        if (!Directory.Exists(FEPath))
+            Directory.CreateDirectory(FEPath);
+
+        var contentsToApply = ReceiveMultiLineInput("컬럼 정보 입력");
+        var processor = new Processor();
+        processor.CreateGridCols(programName, programNamePath, contentsToApply);
     }
 }
 
 static string ReceiveType()
 {
-    Console.WriteLine("1: Template, 2: API");
+    Console.WriteLine("1: Template, 2: Grid Cols");
     var type = Console.ReadLine();
     if (type != "1" && type != "2")
     {
@@ -50,9 +64,9 @@ static string ReceiveType()
     return type;
 }
 
-static string ReceiveName()
+static string ReceiveName(string name = "program name")
 {
-    Console.WriteLine("program name 입력");
+    Console.WriteLine($"{name} 입력");
     var programName = Console.ReadLine();
 
     if (string.IsNullOrEmpty(programName))
@@ -62,4 +76,13 @@ static string ReceiveName()
     }
 
     return programName;
+}
+
+static string ReceiveMultiLineInput(string question)
+{
+    Console.WriteLine($"{question} 입력");
+    //var inputContents = Console.ReadLine();
+    var input = Console.In.ReadToEnd();
+
+    return input;
 }

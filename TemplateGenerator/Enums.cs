@@ -21,7 +21,8 @@ namespace TemplateGenerator
             add_auth_query,
             controller_code,
             service_code,
-            implement_code
+            implement_code,
+            grid_col
         }    
     }
 }

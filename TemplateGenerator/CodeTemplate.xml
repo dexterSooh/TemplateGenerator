@@ -169,4 +169,7 @@
     }}
     ]]>
     </implement_code>
+	<grid_col>
+	<![CDATA[{{binding: '{0}',header: langUtils.getLangData(langSet.object,'{0}','{0}',),width: 50,visible: {1},}},]]>
+	</grid_col>
 </codes>

@@ -101,6 +101,27 @@ namespace TemplateGenerator
             
         }
 
+        public void CreateGridCols(string programName, string path, string contentsToApply)
+        {
+            //{binding: '**',header: langUtils.getLangData(langSet.object,'**','**',),width: 50,visible: false,},
+            var gridColTemplate =
+                GetCData(
+                    _doc?.Descendants(Enums.BaseCodeType.grid_col.ToString())?
+                    .DescendantNodes()?
+                    .FirstOrDefault()?.ToString() ?? "");
+
+            //DEFECT_RANK Decimal 불량순위 DEFECT_RANK FALSE right
+
+            var lines = string.Join("\n",
+                contentsToApply.Split(Environment.NewLine).Where(x => !string.IsNullOrEmpty(x))
+                .Select(x => new { Binding = x.Split('\t').FirstOrDefault(), Visible = x.Split('\t')[4].ToLower() })
+                .Select(x => string.Format(gridColTemplate, x.Binding, x.Visible)));
+
+            CreateFile(
+                Path.Combine(path, $"{programName}_cols.json"),
+                lines);
+        }
+
         void CreateFile(string fileName, string contents)
         {
             if (File.Exists(fileName))
