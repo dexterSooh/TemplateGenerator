@@ -97,8 +97,58 @@ namespace TemplateGenerator
 
             CreateFile(
                 Path.Combine(path, $"{programName}ServiceImpl.java"), 
-                string.Format(implementContents, programName));
-            
+                string.Format(implementContents, programName));            
+        }
+
+        public void CreateJsxContents(string programName, string FEPath)
+        {
+            var FERoot = Path.Combine(FEPath, programName);
+            if (!Directory.Exists(FERoot))
+                Directory.CreateDirectory(FERoot);
+
+            var componentPath = Path.Combine(FERoot, "components");
+            if (!Directory.Exists(componentPath))
+                Directory.CreateDirectory(componentPath);
+
+            var servicesPath = Path.Combine(FERoot, "services");
+            if (!Directory.Exists(servicesPath))
+                Directory.CreateDirectory(servicesPath);
+
+            var searchAreaComponentTemplate =
+                _doc?.Descendants(Enums.BaseCodeType.js_search_area.ToString())?
+                .DescendantNodes().Where(x => x.NodeType == System.Xml.XmlNodeType.CDATA)?
+                .ToList()?.FirstOrDefault()?.Parent?.Value ?? "";
+
+            CreateFile(
+                Path.Combine(componentPath, $"SearchAreaComponent.jsx"),
+                string.Format(searchAreaComponentTemplate, programName));
+
+            var resultAreaComponentTemplate =
+            _doc?.Descendants(Enums.BaseCodeType.js_result_area.ToString())?
+                .DescendantNodes().Where(x => x.NodeType == System.Xml.XmlNodeType.CDATA)?
+                .ToList()?.FirstOrDefault()?.Parent?.Value ?? "";
+
+            CreateFile(
+                Path.Combine(componentPath, $"ResultAreaComponent.jsx"),
+                string.Format(resultAreaComponentTemplate, programName));
+
+            var serviceTemplate =
+            _doc?.Descendants(Enums.BaseCodeType.js_service.ToString())?
+                .DescendantNodes().Where(x => x.NodeType == System.Xml.XmlNodeType.CDATA)?
+                .ToList()?.FirstOrDefault()?.Parent?.Value ?? "";
+
+            CreateFile(
+                Path.Combine(servicesPath, $"{programName}Service.js"),
+                string.Format(serviceTemplate, programName));
+
+            var containerComponentTemplate =
+                _doc?.Descendants(Enums.BaseCodeType.js_container.ToString())?
+                .DescendantNodes().Where(x => x.NodeType == System.Xml.XmlNodeType.CDATA)?
+                .ToList()?.FirstOrDefault()?.Parent?.Value ?? "";
+
+            CreateFile(
+                Path.Combine(FERoot, $"{programName}Containers.jsx"),
+                string.Format(containerComponentTemplate, programName));
         }
 
         public void CreateGridCols(string programName, string path, string contentsToApply)

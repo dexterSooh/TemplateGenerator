@@ -26,8 +26,21 @@ static void Start()
         if (!Directory.Exists(programNamePath))
             Directory.CreateDirectory(programNamePath);
 
-        processor.CreateQuery(programName, programNamePath);
-        processor.CreateJavaContents(programName, programNamePath);
+        var BEPath = Path.Combine(programNamePath, "BE");
+        if (!Directory.Exists(BEPath))
+            Directory.CreateDirectory(BEPath);
+
+        var FEPath = Path.Combine(programNamePath, "FE");
+        if (!Directory.Exists(FEPath))
+            Directory.CreateDirectory(FEPath);
+
+        var SQLPath = Path.Combine(programNamePath, "SQL");
+        if (!Directory.Exists(SQLPath))
+            Directory.CreateDirectory(SQLPath);
+
+        processor.CreateQuery(programName, SQLPath);
+        processor.CreateJavaContents(programName, BEPath);
+        processor.CreateJsxContents(programName, FEPath);
     }
 
     if (type == "2")
@@ -47,13 +60,19 @@ static void Start()
 
         var contentsToApply = ReceiveMultiLineInput("컬럼 정보 입력");
         var processor = new Processor();
-        processor.CreateGridCols(programName, programNamePath, contentsToApply);
+        processor.CreateGridCols(programName, FEPath, contentsToApply);
     }
 }
 
 static string ReceiveType()
 {
     Console.WriteLine("1: Template, 2: Grid Cols");
+    //todo: 조회 조건 생성 모드도 추가 하면 좋을듯
+    //CommonSearchComponent에 CommonSearchItemComponent 레벨로 추가
+    //체크박스, 체크박스 그룹, 라디오 버튼그룹, 콤보박스, 멀티 콤보박스에 해당하는 CommonSearchItemComponent 생성하고
+    //또 그에 해당하는 state구문 생성, currentParam, applyComSrchCompParameters에 추가되는 구문 생성 그리고 ResultAreaComponent.retrieveData에 추가
+
+    //2: Grid Cols 모드에서 check 컬럼 추가 여부 구분하여 생성
     var type = Console.ReadLine();
     if (type != "1" && type != "2")
     {

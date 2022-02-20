@@ -172,4 +172,445 @@
 	<grid_col>
 	<![CDATA[{{binding: '{0}',header: langUtils.getLangData(langSet.object,'{0}','{0}',),width: 50,visible: {1},}},]]>
 	</grid_col>
+	<js_search_area>
+		<![CDATA[import React, {{
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+  useRef,
+}} from 'react';
+import commonFunc from '../../../common/components/commonFunc';
+import * as wijmo from '@grapecity/wijmo';
+import {{ useDispatch }} from 'react-redux';
+import * as wjInput from '@grapecity/wijmo.react.input';
+// 다국어
+import {{ MultiLangContext, langUtils }} from 'ecm_app_commonlib';
+import {{ MultiDatePicker, showMessage }} from 'ecm_app_commonlib';
+import {0}Service from '../services/{0}Service';
+import produce from 'immer';
+import CommonSearchComponent from '../../../common/components/CommonSearchComponent';
+import CommonSearchItemComponent from '../../../common/components/CommonSearchItemComponent';
+import OrgSchGroupComponent from '../../../common/components/OrgSchGroupComponent';
+
+const SearchAreaComponent = (props) => {{
+  const [searchParams, setSearchParams] = useState({{}});
+  const [initComplete, setInitComplete] = useState(false);
+
+  /* 생산라인 component ref */
+  const productLineRef = useRef();
+  
+  /* 생산라인 콤보 데이터 */
+  const [productLineCboData, setProductLineCboData] = useState([]);
+  const assignProductLineCboData = (data) => {{
+    productLineCboDataSTRef.current = data;
+    setProductLineCboData(data);
+  }};
+  const productLineCboDataSTRef = useRef(productLineCboData);
+
+  /* 생산라인 selected value */
+  const [selectedProductLine, setSelectedProductLine] = useState([]);
+  const assignSelectedProductLine = (data) => {{
+    selectedProductLineSTRef.current = data;
+    setSelectedProductLine(data);
+  }};
+  const selectedProductLineSTRef = useRef(selectedProductLine);
+
+  /* model suffix */
+  const [model, setModel] = useState('');
+  const assignModel = (data) => {{
+    modelSTRef.current = data;
+    setModel(data);
+  }};
+  const modelSTRef = useRef(model);
+
+  /* wo */
+  const [wo, setWo] = useState('');
+  const assignWo = (data) => {{
+    woSTRef.current = data;
+    setWo(data);
+  }};
+  const woSTRef = useRef(wo);
+
+  /* 공통 조회 comp */
+  const [comSrchCompParameters, setComSrchCompParameters] = useState(null);
+  const assignComSrchCompParameters = (data) => {{
+    comSrchCompParametersSTRef.current = data;
+    setComSrchCompParameters(data);
+  }};
+  const comSrchCompParametersSTRef = useRef(comSrchCompParameters);
+
+  //Organization, Schedule Group Ref
+  const orgSchGrpCompRef = useRef();
+  //CommonSearchComponent Ref
+  const comSrchCompRef = useRef();
+  const dtpMultiDateRef = useRef();
+  
+
+  useEffect(() => {{
+    if (!initComplete) return;
+
+    applyComSrchCompParameters();
+  }}, [comSrchCompParameters]);
+
+  useEffect(() => {{
+    retrieveSelCodeItemCbo();
+  }}, []);
+
+  /**
+   * Product Line Combo data 조회
+   */
+  const retrieveProductLineData = async () => {{
+    if (orgSchGrpCompRef?.current == null) return;
+
+    const scheduleGroupDatas = orgSchGrpCompRef.current.getScheduleGroup();
+    const param = scheduleGroupDatas.length == 0 ? '' : scheduleGroupDatas;
+
+    const response = await service.getWipLineM(param);
+    assignProductLineCboData(response.data);
+  }};
+
+  const onOrgSchGroupCompInitilized = async () => {{
+    await retrieveProductLineData();
+    applyComSrchCompParameters();
+    setInitComplete(true);
+  }};
+
+  const dispatch = useDispatch();
+  let LangSet = useContext(MultiLangContext);
+  const service = new {0}Service(dispatch, LangSet);
+
+  const currentParam = () =>
+    produce(searchParams, (draft) => {{
+      let sDt = wijmo.Globalize.format(
+        dtpMultiDateRef.current.getStartDateTime(),
+        'yyyyMMdd',
+      );
+      let eDt = wijmo.Globalize.format(
+        dtpMultiDateRef.current.getEndDateTime(),
+        'yyyyMMdd',
+      );
+
+      draft.orgData = orgSchGrpCompRef.current.getOrganization();
+      draft.schGrpData = orgSchGrpCompRef.current.getScheduleGroup();
+      draft.facility = orgSchGrpCompRef.current.getFacility();
+      draft.schStartDt = sDt;
+      draft.schEndDt = eDt;
+      draft.productLine = selectedProductLineSTRef.current
+        .map((x) => x.WIP_LINE_ID)
+        .toString();
+      draft.model = modelSTRef.current;
+      draft.wo = woSTRef.current;
+	  
+	  /* to-do: implement other conditions */
+    }});
+
+  const onUpdatedParameter = (param) => {{
+    assignComSrchCompParameters(param);
+    props.updateSearch(param);
+  }};
+
+  //Menu Paramete Received Event
+  const onReceivedParameter = (param) => {{
+    alert('MENU_PARAMETER : ' + param);
+  }};
+
+  const onConditionSetting = () => {{
+    //Setting Current Parameter
+    comSrchCompRef.current.settingCurrentCondition(currentParam());
+  }};
+
+  const applyComSrchCompParameters = async () => {{
+    if (!comSrchCompParametersSTRef.current) return;
+
+    var param = comSrchCompParametersSTRef.current;
+    dtpMultiDateRef.current.setStartDateTime(
+      commonFunc.ParseDate_yyyyMMdd(param.schStartDt),
+    );
+    dtpMultiDateRef.current.setEndDateTime(
+      commonFunc.ParseDate_yyyyMMdd(param.schEndDt),
+    );
+    orgSchGrpCompRef.current.setOrgSchGrData(param.orgData, param.schGrpData);
+    if (productLineCboDataSTRef.current.length > 0) {{
+      productLineRef.current.checkedItems =
+        productLineCboDataSTRef.current.filter((x) =>
+          param.productLine.split(',').includes(x.WIP_LINE_ID),
+        );
+    }}
+    assignModel(param.model);
+    assignWo(param.wo);
+	
+    /* to-do: implement others */
+  }};
+
+  const onSearchClick = () => {{
+    comSrchCompRef.current.updateSearchParameter(currentParam());
+  }};
+
+  return (
+    <>
+      <CommonSearchComponent
+        {{...props}}
+        ref={{comSrchCompRef}}
+        isShowSearchButton={{true}}
+        isMngCondition={{true}}
+        onSearchClick={{onSearchClick}}
+        onUpdatedParameter={{onUpdatedParameter}}
+        onReceivedParameter={{onReceivedParameter}}
+        onConditionSetting={{onConditionSetting}}
+      >
+        {{/* 공통 Organization, Schedule Group */}}
+        <CommonSearchItemComponent
+          isMandantory={{false}}
+          title={{langUtils.getLangData(LangSet.object, 'Schedule Group')}}
+        >
+          <OrgSchGroupComponent
+            ref={{orgSchGrpCompRef}}
+            onInitilized={{onOrgSchGroupCompInitilized}}
+            onChangedScheduleGroups={{async () =>
+              await retrieveProductLineData()
+            }}
+          ></OrgSchGroupComponent>
+        </CommonSearchItemComponent>
+        {{/* from-to picker */}}
+        <CommonSearchItemComponent
+          isMandantory={{false}}
+          title={{langUtils.getLangData(LangSet.object, 'Period')}}
+        >
+          <MultiDatePicker
+            ref={{dtpMultiDateRef}}
+            term={{props.dfTerm ? props.dfTerm : '30d'}}
+            changeTrigger="Direct"
+            withTime={{false}}
+            isRequired={{true}}
+            // selectionMode={{section === 'M' ? 'Month' : 'Week'}}
+          />
+        </CommonSearchItemComponent>
+        {{/* Product Line Combo */}}
+        <CommonSearchItemComponent
+          isMandantory={{false}}
+          title={{langUtils.getLangData(LangSet.object, 'Product Line')}}
+        >
+          <wjInput.MultiSelect
+            initialized={{(s) => (productLineRef.current = s)}}
+            placeholder={{langUtils.getLangData(LangSet.object, 'Select')}}
+            showSelectAllCheckbox={{true}}
+            headerFormat={{
+              selectedProductLineSTRef.current.length == 0
+                ? ''
+                : `${{
+                    selectedProductLineSTRef.current[0]['WIP_LINE_CODE']
+                  }} other ${{selectedProductLineSTRef.current.length - 1}}`
+            }}
+            displayMemberPath="WIP_LINE_CODE"
+            selectedValuePath="WIP_LINE_ID"
+            checkedMemberPath="SELECTED"
+            itemsSource={{productLineCboData}}
+            checkedItemsChanged={{(e) =>
+              assignSelectedProductLine(e.checkedItems)
+            }}
+          ></wjInput.MultiSelect>
+        </CommonSearchItemComponent>
+        {{/* Model Text */}}
+        <CommonSearchItemComponent
+          isMandantory={{false}}
+          title={{langUtils.getLangData(LangSet.object, 'Model')}}
+        >
+          <input
+            type="text"
+            value={{modelSTRef.current}}
+            onChange={{(e) => assignModel(e.target.value)}}
+          ></input>
+        </CommonSearchItemComponent>
+        {{/* WO Text */}}
+        <CommonSearchItemComponent
+          isMandantory={{false}}
+          title={{langUtils.getLangData(LangSet.object, 'W/O')}}
+        >
+          <input
+            type="text"
+            value={{woSTRef.current}}
+            onChange={{(e) => assignWo(e.target.value)}}
+          ></input>
+        </CommonSearchItemComponent>
+        /* to-do: implement others */
+      </CommonSearchComponent>
+    </>
+  );
+}};
+
+export default SearchAreaComponent;
+    ]]>		
+	</js_search_area>
+	<js_result_area>
+		<![CDATA[import React, {{ useEffect, useState, useRef, useContext }} from 'react';
+import {{ useDispatch, useSelector }} from 'react-redux';
+import {{ MultiLangContext, langUtils }} from 'ecm_app_commonlib';
+import {{ showMessage }} from 'ecm_app_commonlib';
+import * as wijmo from '@grapecity/wijmo';
+import {{ CollectionView }} from '@grapecity/wijmo';
+import * as wjGrid from '@grapecity/wijmo.react.grid';
+import * as wjInput from '@grapecity/wijmo.react.input';
+import {0}Service from '../services/{0}Service';
+import commonFunc from '../../../common/components/commonFunc';
+import {{ Form }} from 'react-bootstrap';
+
+const ResultAreaComponent = (props) => {{
+  let _ = require('lodash');
+
+  const [grid, setGrid] = useState();
+  const assignGrid = (data) => {{
+    gridSTRef.current = data;
+    setGrid(data);
+  }};
+  const gridSTRef = useRef(grid);
+
+  const [gridData, setGridData] = useState([]);
+  const assignGridData = (data) => {{
+    gridDataSTRef.current = data;
+    setGridData(data);
+  }};
+  const gridDataSTRef = useRef(gridData);
+
+  let langSet = useContext(MultiLangContext);
+
+  const getDefaultColumns = () => {{
+    /* to-do: implement */
+    return [];
+  }};
+
+  const dispatch = useDispatch();
+  // const [gridData, setGridData] = useState([]);
+  const service = new {0}Service(dispatch, langSet);
+  const [gridRowCnt, setGridRowCnt] = useState(0);
+  const [gridColumns, setGridColumns] = useState(getDefaultColumns());
+
+  useEffect(() => {{
+    if (!props.searchParams) return;
+
+    retrieveData();
+  }}, [props.searchParams]);
+
+  /**
+   * 조회
+   * @returns
+   */
+  const retrieveData = async () => {{
+    /* to-do: implement */
+	/* 
+    const response = await service.getIQCRepairSelect({{
+      FROM_DATE: props.searchParams.schStartDt,
+      TO_DATE: props.searchParams.schEndDt,
+      WIP_LINE_ID: props.searchParams.productLine ?? '',
+      PRODUCT_SPECIFICATION_ID: props.searchParams.model,
+      WORK_ORDER_NAME: props.searchParams.workOrderName,
+      SET_ID: props.searchParams.setId,
+      PART_NO: props.searchParams.partNo,
+      IQC_STATUS: props.searchParams.iqcStatus,
+      CIRCUIT_NO: props.searchParams.circuitNo,
+      DEFECT_CAUSE_NAME: props.searchParams.defectCauseName,
+      VENDOR_SITE_DESC: props.searchParams.vendorSiteDesc,
+      DEFECT_CAUSE_DEPARTMENT_NAME:
+        props.searchParams.defectCauseDepartmentName,
+    }});
+	*/
+
+    if (!response.data) {{
+      return;
+    }}
+
+    const data = response.data;
+    setGridData(data);
+    const rowCount = wijmo.Globalize.format(response.data.length, 'n0');
+    setGridRowCnt(rowCount);
+    showMessage(
+      dispatch,
+      'ALL',
+      langUtils.getLangData(langSet.message, 'COM006', null, rowCount),
+    );
+  }};
+
+  const onGridInitialized = (s) => {{
+    assignGrid(s);
+  }};
+
+  return (
+    <React.Fragment>
+      <div className="flex_align_l">
+        <h3>
+		  {{/* to-do: implement */}}
+          {{langUtils.getLangData(langSet.object, '', '')}}
+          <span className="num_txt">{{gridRowCnt}}</span>
+        </h3>
+      </div>
+      <div className="flex_align_row wid100" style={{ height: '50px' }}>
+        <wjGrid.FlexGrid
+          id="fGrid"
+          itemFormatter={{itemFormatter}}
+		  {{/* to-do: implement */}}
+          selectionMode="Cell"
+          itemsSource={{gridData}}
+          initialized={{onGridInitialized}}
+        >
+          {{/* check */}}
+          <wjGrid.FlexGridColumn
+            header=" "
+            binding="active"
+            allowResizing={{true}}
+            visible={{true}}
+            width={{45}}
+          />
+        </wjGrid.FlexGrid>
+      </div>
+    </React.Fragment>
+  );
+}};
+
+export default ResultAreaComponent;
+    ]]>
+	</js_result_area>
+	<js_service>
+		<![CDATA[import {{ BaseService }} from 'ecm_app_commonlib';
+import {{ SessionService }} from 'ecm_app_commonlib';
+
+export default class {0}Service {{
+  constructor(dispatch, LangSet) {{
+    this.baseService = new BaseService(dispatch, LangSet);
+    this.sessionService = new SessionService();
+  }}
+}}
+    ]]>
+	</js_service>
+	<js_container>
+		<![CDATA[import React, {{ useEffect, useState, useRef }} from 'react';
+import ResultAreaComponent from './components/ResultAreaComponent.jsx';
+import SearchAreaComponent from './components/SearchAreaComponent';
+import {{ LayoutContainer }} from 'ecm_app_commonlib';
+
+const {0}Container = (props) => {{
+  const [searchParams, setSearchParams] = useState(null);
+
+  useEffect(() => {{}}, []);
+
+  const updateSearch = (params) => {{
+    setSearchParams(params);
+  }};
+  return (
+    <LayoutContainer
+      {{...props}}
+      SearchContainer={{
+        <SearchAreaComponent
+          {{...props}}
+          updateSearch={{updateSearch}}
+        ></SearchAreaComponent>
+      }}
+      ContentsContainer={{
+        <ResultAreaComponent {{...props}} searchParams={{searchParams}} />
+      }}
+    ></LayoutContainer>
+  );
+}};
+export default {0}Container;
+    ]]>
+	</js_container>
 </codes>

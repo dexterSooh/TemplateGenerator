@@ -22,7 +22,26 @@ namespace TemplateGenerator
             controller_code,
             service_code,
             implement_code,
-            grid_col
+            /// <summary>
+            /// 그리드 컬럼 자동생성
+            /// </summary>
+            grid_col,
+            /// <summary>
+            /// SearchAreaComponent
+            /// </summary>
+            js_search_area,
+            /// <summary>
+            /// ResultAreaComponent
+            /// </summary>
+            js_result_area,
+            /// <summary>
+            /// Service
+            /// </summary>
+            js_service,
+            /// <summary>
+            /// ContainerComponent
+            /// </summary>
+            js_container
         }    
     }
 }
