@@ -192,6 +192,10 @@ import produce from 'immer';
 import CommonSearchComponent from '../../../common/components/CommonSearchComponent';
 import CommonSearchItemComponent from '../../../common/components/CommonSearchItemComponent';
 import OrgSchGroupComponent from '../../../common/components/OrgSchGroupComponent';
+import {
+  defaultMessage,
+  schCondCode,
+} from '../../../common/components/CommonVariables'; //공통조회조건
 
 const SearchAreaComponent = (props) => {{
   const [searchParams, setSearchParams] = useState({{}});
@@ -291,16 +295,19 @@ const SearchAreaComponent = (props) => {{
         'yyyyMMdd',
       );
 
-      draft.orgData = orgSchGrpCompRef.current.getOrganization();
-      draft.schGrpData = orgSchGrpCompRef.current.getScheduleGroup();
-      draft.facility = orgSchGrpCompRef.current.getFacility();
-      draft.schStartDt = sDt;
-      draft.schEndDt = eDt;
-      draft.productLine = selectedProductLineSTRef.current
+      draft[schCondCode.organization] =
+        orgSchGrpCompRef.current.getOrganization();
+      draft[schCondCode.scheduleGroup] =
+        orgSchGrpCompRef.current.getScheduleGroup();
+      draft[schCondCode.facility] = orgSchGrpCompRef.current.getFacility();
+      draft[schCondCode.startDate] = sDt;
+      draft[schCondCode.endDate] = eDt;
+      draft[schCondCode.dateType] = sectionSTRef.current;
+      draft[schCondCode.productionLine] = selectedProductLineSTRef.current
         .map((x) => x.WIP_LINE_ID)
         .toString();
-      draft.model = modelSTRef.current;
-      draft.wo = woSTRef.current;
+      draft.tool = toolSTRef.current;
+      draft[schCondCode.modelSuffix] = modelSTRef.current;
 	  
 	  /* to-do: implement other conditions */
     }});
@@ -325,19 +332,22 @@ const SearchAreaComponent = (props) => {{
 
     var param = comSrchCompParametersSTRef.current;
     dtpMultiDateRef.current.setStartDateTime(
-      commonFunc.ParseDate_yyyyMMdd(param.schStartDt),
+      commonFunc.ParseDate_yyyyMMdd(param[schCondCode.startDate]),
     );
     dtpMultiDateRef.current.setEndDateTime(
-      commonFunc.ParseDate_yyyyMMdd(param.schEndDt),
+      commonFunc.ParseDate_yyyyMMdd(param[schCondCode.endDate]),
     );
-    orgSchGrpCompRef.current.setOrgSchGrData(param.orgData, param.schGrpData);
-    if (productLineCboDataSTRef.current.length > 0) {{
+    orgSchGrpCompRef.current.setOrgSchGrData(
+      param[schCondCode.organization],
+      param[schCondCode.scheduleGroup],
+    );
+    if (productLineCboDataSTRef.current.length > 0) {
       productLineRef.current.checkedItems =
         productLineCboDataSTRef.current.filter((x) =>
-          param.productLine.split(',').includes(x.WIP_LINE_ID),
+          param[schCondCode.productionLine].split(',').includes(x.WIP_LINE_ID),
         );
-    }}
-    assignModel(param.model);
+    }
+    assignModel(param[schCondCode.modelSuffix]);
     assignWo(param.wo);
 	
     /* to-do: implement others */
@@ -346,6 +356,10 @@ const SearchAreaComponent = (props) => {{
   const onSearchClick = () => {{
     comSrchCompRef.current.updateSearchParameter(currentParam());
   }};
+
+  const onOrgSchGroupChanged = async () => {{
+    await retrieveProductLineData();
+  }};  
 
   return (
     <>
@@ -367,9 +381,7 @@ const SearchAreaComponent = (props) => {{
           <OrgSchGroupComponent
             ref={{orgSchGrpCompRef}}
             onInitilized={{onOrgSchGroupCompInitilized}}
-            onChangedScheduleGroups={{async () =>
-              await retrieveProductLineData()
-            }}
+            onChangedScheduleGroups={{onOrgSchGroupChanged}}
           ></OrgSchGroupComponent>
         </CommonSearchItemComponent>
         {{/* from-to picker */}}
@@ -433,7 +445,6 @@ const SearchAreaComponent = (props) => {{
             onChange={{(e) => assignWo(e.target.value)}}
           ></input>
         </CommonSearchItemComponent>
-        /* to-do: implement others */
       </CommonSearchComponent>
     </>
   );
@@ -454,6 +465,10 @@ import * as wjInput from '@grapecity/wijmo.react.input';
 import {0}Service from '../services/{0}Service';
 import commonFunc from '../../../common/components/commonFunc';
 import {{ Form }} from 'react-bootstrap';
+import {
+  defaultMessage,
+  schCondCode,
+} from '../../../common/components/CommonVariables';
 
 const ResultAreaComponent = (props) => {{
   let _ = require('lodash');
@@ -491,6 +506,12 @@ const ResultAreaComponent = (props) => {{
     retrieveData();
   }}, [props.searchParams]);
 
+  useEffect(() => {
+    if (!gridData.length) return;
+
+    grid.autoSizeColumns();
+  }, [gridData]);    
+
   /**
    * 조회
    * @returns
@@ -499,19 +520,9 @@ const ResultAreaComponent = (props) => {{
     /* to-do: implement */
 	/* 
     const response = await service.getIQCRepairSelect({{
-      FROM_DATE: props.searchParams.schStartDt,
-      TO_DATE: props.searchParams.schEndDt,
-      WIP_LINE_ID: props.searchParams.productLine ?? '',
-      PRODUCT_SPECIFICATION_ID: props.searchParams.model,
-      WORK_ORDER_NAME: props.searchParams.workOrderName,
-      SET_ID: props.searchParams.setId,
-      PART_NO: props.searchParams.partNo,
-      IQC_STATUS: props.searchParams.iqcStatus,
-      CIRCUIT_NO: props.searchParams.circuitNo,
-      DEFECT_CAUSE_NAME: props.searchParams.defectCauseName,
-      VENDOR_SITE_DESC: props.searchParams.vendorSiteDesc,
-      DEFECT_CAUSE_DEPARTMENT_NAME:
-        props.searchParams.defectCauseDepartmentName,
+      FROM_DATE: props.searchParams[schCondCode.startDate],
+      TO_DATE: props.searchParams[schCondCode.startDate],
+      WIP_LINE_ID: props.searchParams[schCondCode.productionLine] ?? '',
     }});
 	*/
 
@@ -532,6 +543,7 @@ const ResultAreaComponent = (props) => {{
 
   const onGridInitialized = (s) => {{
     assignGrid(s);
+    s.autoSizeColumns();
   }};
 
   return (
@@ -550,7 +562,9 @@ const ResultAreaComponent = (props) => {{
 		  {{/* to-do: implement */}}
           selectionMode="Cell"
           itemsSource={{gridData}}
+          itemsSourceChanged={(s, e) => s.autoSizeColumns()}
           initialized={{onGridInitialized}}
+          loadedRows={(s) => s.autoSizeColumns()}
         >
           {{/* check */}}
           <wjGrid.FlexGridColumn
@@ -578,6 +592,30 @@ export default class {0}Service {{
     this.baseService = new BaseService(dispatch, LangSet);
     this.sessionService = new SessionService();
   }}
+  
+  /**
+   * ProductLine
+   * @returns
+   */
+  async getWipLineM(ids) {{
+    let response;
+    const method = 'POST';
+    const url = '/api/production/getWipLineM';
+    const body = JSON.stringify({{
+      SCHEDULE_GROUP_ID: ids,
+    }});
+    console.log('object', body);
+    try {{
+      this.baseService.setAuthorization(
+        this.sessionService.getSessionStorageValue('user'),
+      );
+      response = await this.baseService.fnRest(method, url, body);
+    }} catch (error) {{
+      response = error;
+    }}
+    return response.data;
+  }}  
+  /* to-do: implement */
 }}
     ]]>
 	</js_service>

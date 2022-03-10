@@ -25,7 +25,7 @@ namespace TemplateGenerator
 
         string GetCData(string contents)
         {
-            var regex = 
+            var regex =
                 new Regex(@"\<\!\[CDATA\[(?<text>[^\]]*)\]\]\>", RegexOptions.None);
             if (!regex.IsMatch(contents))
                 return string.Empty;
@@ -74,9 +74,9 @@ namespace TemplateGenerator
                     .FirstOrDefault()?.ToString() ?? "");
 
             CreateFile(
-                Path.Combine(path, $"{programName}Controller.java"), 
+                Path.Combine(path, $"{programName}Controller.java"),
                 string.Format(controllerContents, programName));
-            
+
 
             var serviceContents =
                 GetCData(
@@ -85,9 +85,9 @@ namespace TemplateGenerator
                     .FirstOrDefault()?.ToString() ?? "");
 
             CreateFile(
-                Path.Combine(path, $"{programName}Service.java"), 
+                Path.Combine(path, $"{programName}Service.java"),
                 string.Format(serviceContents, programName));
-            
+
 
             var implementContents =
                 GetCData(
@@ -96,8 +96,8 @@ namespace TemplateGenerator
                     .FirstOrDefault()?.ToString() ?? "");
 
             CreateFile(
-                Path.Combine(path, $"{programName}ServiceImpl.java"), 
-                string.Format(implementContents, programName));            
+                Path.Combine(path, $"{programName}ServiceImpl.java"),
+                string.Format(implementContents, programName));
         }
 
         public void CreateJsxContents(string programName, string FEPath)
@@ -147,7 +147,7 @@ namespace TemplateGenerator
                 .ToList()?.FirstOrDefault()?.Parent?.Value ?? "";
 
             CreateFile(
-                Path.Combine(FERoot, $"{programName}Containers.jsx"),
+                Path.Combine(FERoot, $"{programName}Container.js"),
                 string.Format(containerComponentTemplate, programName));
         }
 
