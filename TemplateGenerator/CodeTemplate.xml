@@ -2,7 +2,7 @@
 
 <codes>
 	<new_programId_query>
-	<![CDATA[
+		<![CDATA[
     --'WEB0101' 기준으로 한 신규 id => WEB0101**
     SELECT CONCAT('WEB0101', 
     (select REPLACE((SELECT MAX(PROGRAM_ID) FROM TB_COR_PROGRAM
@@ -13,7 +13,7 @@
     ]]>
 	</new_programId_query>
 	<add_programId_query>
-	<![CDATA[
+		<![CDATA[
     --Program id 등록 **주의 PROGRAM_PATH**
     INSERT INTO TB_COR_PROGRAM
     (
@@ -60,7 +60,7 @@
     ]]>
 	</add_programId_query>
 	<add_auth_query>
-	<![CDATA[
+		<![CDATA[
     --권한 등록
     insert into TB_MMD_ORG_USR_CLASS_AUTH_N
     values ('255300','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
@@ -87,8 +87,8 @@
     values ('304056','SYSTEM_ADMIN','NEW_PROGRAM_ID','W','sysadmin',SYSDATE,'','');
     ]]>
 	</add_auth_query>
-    <controller_code>
-	    <![CDATA[
+	<controller_code>
+		<![CDATA[
     package com.lg.mes.production;
 
     import lombok.extern.slf4j.Slf4j;
@@ -109,9 +109,9 @@
     
     }}
     ]]>
-    </controller_code>
-    <service_code>
-	    <![CDATA[
+	</controller_code>
+	<service_code>
+		<![CDATA[
     package com.lg.mes.production;
 
     import org.springframework.http.ResponseEntity;
@@ -125,9 +125,9 @@
 	*/
     }}
     ]]>
-    </service_code>
-    <implement_code>
-	    <![CDATA[
+	</service_code>
+	<implement_code>
+		<![CDATA[
     package com.lg.mes.production;
 
     import com.lg.common.solace.SolaceService;
@@ -168,9 +168,9 @@
 		*/
     }}
     ]]>
-    </implement_code>
+	</implement_code>
 	<grid_col>
-	<![CDATA[{{binding: '{0}',header: langUtils.getLangData(langSet.object,'{0}','{0}',),width: 50,visible: {1},}},]]>
+		<![CDATA[{{binding: '{0}',header: langUtils.getLangData(langSet.object,'{0}','{0}',),width: 50,visible: {1},}},]]>
 	</grid_col>
 	<js_search_area>
 		<![CDATA[import React, {{
@@ -192,10 +192,10 @@ import produce from 'immer';
 import CommonSearchComponent from '../../../common/components/CommonSearchComponent';
 import CommonSearchItemComponent from '../../../common/components/CommonSearchItemComponent';
 import OrgSchGroupComponent from '../../../common/components/OrgSchGroupComponent';
-import {
+import {{
   defaultMessage,
   schCondCode,
-} from '../../../common/components/CommonVariables'; //공통조회조건
+}} from '../../../common/components/CommonVariables'; //공통조회조건
 
 const SearchAreaComponent = (props) => {{
   const [searchParams, setSearchParams] = useState({{}});
@@ -341,12 +341,12 @@ const SearchAreaComponent = (props) => {{
       param[schCondCode.organization],
       param[schCondCode.scheduleGroup],
     );
-    if (productLineCboDataSTRef.current.length > 0) {
+    if (productLineCboDataSTRef.current.length > 0) {{
       productLineRef.current.checkedItems =
         productLineCboDataSTRef.current.filter((x) =>
           param[schCondCode.productionLine].split(',').includes(x.WIP_LINE_ID),
         );
-    }
+    }}
     assignModel(param[schCondCode.modelSuffix]);
     assignWo(param.wo);
 	
@@ -451,7 +451,7 @@ const SearchAreaComponent = (props) => {{
 }};
 
 export default SearchAreaComponent;
-    ]]>		
+    ]]>
 	</js_search_area>
 	<js_result_area>
 		<![CDATA[import React, {{ useEffect, useState, useRef, useContext }} from 'react';
@@ -465,10 +465,10 @@ import * as wjInput from '@grapecity/wijmo.react.input';
 import {0}Service from '../services/{0}Service';
 import commonFunc from '../../../common/components/commonFunc';
 import {{ Form }} from 'react-bootstrap';
-import {
+import {{
   defaultMessage,
   schCondCode,
-} from '../../../common/components/CommonVariables';
+}} from '../../../common/components/CommonVariables';
 
 const ResultAreaComponent = (props) => {{
   let _ = require('lodash');
@@ -506,11 +506,11 @@ const ResultAreaComponent = (props) => {{
     retrieveData();
   }}, [props.searchParams]);
 
-  useEffect(() => {
+  useEffect(() => {{
     if (!gridData.length) return;
 
     grid.autoSizeColumns();
-  }, [gridData]);    
+  }}, [gridData]);    
 
   /**
    * 조회
@@ -562,9 +562,9 @@ const ResultAreaComponent = (props) => {{
 		  {{/* to-do: implement */}}
           selectionMode="Cell"
           itemsSource={{gridData}}
-          itemsSourceChanged={(s, e) => s.autoSizeColumns()}
+          itemsSourceChanged={{(s, e) => s.autoSizeColumns()}}
           initialized={{onGridInitialized}}
-          loadedRows={(s) => s.autoSizeColumns()}
+          loadedRows={{(s) => s.autoSizeColumns()}}
         >
           {{/* check */}}
           <wjGrid.FlexGridColumn
