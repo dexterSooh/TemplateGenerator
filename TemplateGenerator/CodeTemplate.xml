@@ -257,10 +257,6 @@ const SearchAreaComponent = (props) => {{
     applyComSrchCompParameters();
   }}, [comSrchCompParameters]);
 
-  useEffect(() => {{
-    retrieveSelCodeItemCbo();
-  }}, []);
-
   /**
    * Product Line Combo data 조회
    */
