@@ -310,10 +310,10 @@ const SearchAreaComponent = (props) => {{
   }};
 
   const dispatch = useDispatch();
-  let LangSet = useContext(MultiLangContext);
-  const service = new {0}Service(dispatch, LangSet);
+  let langSet = useContext(MultiLangContext);
+  const service = new {0}Service(dispatch, langSet);
 
-  const currentParam = () =>
+  const currentParam = (isSearchClicked) =>
     produce(searchParams, (draft) => {{
       draft[schCondCode.organization] =
         orgSchGrpCompRef.current.getOrganization();
@@ -413,7 +413,7 @@ const SearchAreaComponent = (props) => {{
         {{/* 공통 Organization, Schedule Group */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
-          title={{langUtils.getLangData(LangSet.object, 'Schedule Group')}}
+          title={{langUtils.getLangData(langSet.object, 'Schedule Group')}}
         >
           <OrgSchGroupComponent
             ref={{orgSchGrpCompRef}}
@@ -458,7 +458,7 @@ const SearchAreaComponent = (props) => {{
         {{/* from-to picker */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
-          title={{langUtils.getLangData(LangSet.object, 'Period')}}
+          title={{langUtils.getLangData(langSet.object, 'Period')}}
         >
           <MultiDatePicker
             ref={{dtpMultiDateRef}}
@@ -472,11 +472,11 @@ const SearchAreaComponent = (props) => {{
         {{/* Product Line Combo */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
-          title={{langUtils.getLangData(LangSet.object, 'Product Line')}}
+          title={{langUtils.getLangData(langSet.object, 'Product Line')}}
         >
           <wjInput.MultiSelect
             initialized={{(s) => (productLineRef.current = s)}}
-            placeholder={{langUtils.getLangData(LangSet.object, 'Select')}}
+            placeholder={{langUtils.getLangData(langSet.object, 'Select')}}
             showSelectAllCheckbox={{true}}
             headerFormat={{
               selectedProductLineSTRef.current.length == 0
@@ -497,7 +497,7 @@ const SearchAreaComponent = (props) => {{
         {{/* PRODUCT_SPECIFICATION_ID (Model Suffix) */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
-          title={{langUtils.getLangData(LangSet.object, 'PRODUCT_SPECIFICATION_ID')}}
+          title={{langUtils.getLangData(langSet.object, 'PRODUCT_SPECIFICATION_ID')}}
         >
           <input
             type="text"
@@ -508,7 +508,7 @@ const SearchAreaComponent = (props) => {{
         {{/* WO Text */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
-          title={{langUtils.getLangData(LangSet.object, 'WORK_ORDER_NAME')}}
+          title={{langUtils.getLangData(langSet.object, 'WORK_ORDER_NAME')}}
         >
           <input
             type="text"
@@ -594,19 +594,19 @@ const ResultAreaComponent = (props) => {{
   const retrieveData = async () => {{
     /* to-do: implement */
 
-    if (!response.data) {{
-      return;
-    }}
+    //if (!response.data) {{
+    //  return;
+    //}}
 
-    const data = response.data;
-    setGridData(data);
-    const rowCount = wijmo.Globalize.format(response.data.length, 'n0');
-    setGridRowCnt(rowCount);
-    showMessage(
-      dispatch,
-      'ALL',
-      langUtils.getLangData(langSet.message, 'COM006', null, rowCount),
-    );
+    // const data = response.data;
+    // setGridData(data);
+    // const rowCount = wijmo.Globalize.format(response.data.length, 'n0');
+    // setGridRowCnt(rowCount);
+    // showMessage(
+    //   dispatch,
+    //   'ALL',
+    //   langUtils.getLangData(langSet.message, 'COM006', null, rowCount),
+    // );
   }};
 
   const onGridInitialized = (s) => {{
@@ -628,7 +628,7 @@ const ResultAreaComponent = (props) => {{
       <div className="flex_align_row wid100" style={{{{ height: '50px' }}}}>
         <wjGrid.FlexGrid
           id="fGrid"
-          itemFormatter={{itemFormatter}}
+          //itemFormatter={{itemFormatter}}
           selectionMode="Cell"
           itemsSource={{gridData}}
           itemsSourceChanged={{(s, e) => s.autoSizeColumns()}}
@@ -670,8 +670,8 @@ export default ResultAreaComponent;
 import {{ SessionService }} from 'ecm_app_commonlib';
 
 export default class {0}Service {{
-  constructor(dispatch, LangSet) {{
-    this.baseService = new BaseService(dispatch, LangSet);
+  constructor(dispatch, langSet) {{
+    this.baseService = new BaseService(dispatch, langSet);
     this.sessionService = new SessionService();
   }}
   
