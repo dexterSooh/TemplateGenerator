@@ -201,6 +201,15 @@ const SearchAreaComponent = (props) => {{
   const [searchParams, setSearchParams] = useState({{}});
   const [initComplete, setInitComplete] = useState(false);
 
+  //월별,주별 조건
+  const [dateType, setDateType] = useState('M');
+  const assignDateType = (data) => {{
+    dateTypeSTRef.current = data;
+    setDateType(data);
+  }};
+  const dateTypeSTRef = useRef(dateType);  
+  const onDateTypeChanged = (e) => assignDateType(e);
+
   /* 생산라인 component ref */
   const productLineRef = useRef();
   
@@ -208,6 +217,7 @@ const SearchAreaComponent = (props) => {{
   const [productLineCboData, setProductLineCboData] = useState([]);
   const assignProductLineCboData = (data) => {{
     productLineCboDataSTRef.current = data;
+    assignSelectedProductLine(data.filter((item) => item.SELECTED == true));
     setProductLineCboData(data);
   }};
   const productLineCboDataSTRef = useRef(productLineCboData);
@@ -220,21 +230,21 @@ const SearchAreaComponent = (props) => {{
   }};
   const selectedProductLineSTRef = useRef(selectedProductLine);
 
-  /* model suffix */
-  const [model, setModel] = useState('');
-  const assignModel = (data) => {{
-    modelSTRef.current = data;
-    setModel(data);
+  /* PRODUCT_SPECIFICATION_ID (Model Suffix) */
+  const [productSpecificationId, setProductSpecificationId] = useState('');
+  const assignProductSpecificationId = (data) => {{
+    productSpecificationIdSTRef.current = data;
+    setProductSpecificationId(data);
   }};
-  const modelSTRef = useRef(model);
+  const productSpecificationIdSTRef = useRef(productSpecificationId);
 
-  /* wo */
-  const [wo, setWo] = useState('');
-  const assignWo = (data) => {{
-    woSTRef.current = data;
-    setWo(data);
-  }};
-  const woSTRef = useRef(wo);
+  //wo
+  const [workOrderName, setWorkOrderName] = useState('');
+  const assignWorkOrderName = (data) => {
+    workOrderNameSTRef.current = data;
+    setWorkOrderName(data);
+  };
+  const workOrderNameSTRef = useRef(workOrderName);
 
   /* 공통 조회 comp */
   const [comSrchCompParameters, setComSrchCompParameters] = useState(null);
@@ -267,7 +277,30 @@ const SearchAreaComponent = (props) => {{
     const param = scheduleGroupDatas.length == 0 ? '' : scheduleGroupDatas;
 
     const response = await service.getWipLineM(param);
-    assignProductLineCboData(response.data);
+    if (applyFlagSTRef.current) {{
+      if (comSrchCompParametersSTRef.current) {{
+        assignProductLineCboData(
+          response.data.map((item) => {{
+            if (
+              comSrchCompParametersSTRef.current[schCondCode.productionLine]
+                .split(',')
+                .includes(item.WIP_LINE_ID)
+            ) {{
+              item.SELECTED = true;
+            }}
+            return item;
+          }}),
+        );
+        assignApplyFlag(false);
+      }}
+    }} else {{
+      assignProductLineCboData(
+        response.data.map((item) => {{
+          item.SELECTED = true;
+          return item;
+        }}),
+      );
+    }}
   }};
 
   const onOrgSchGroupCompInitilized = async () => {{
@@ -282,75 +315,83 @@ const SearchAreaComponent = (props) => {{
 
   const currentParam = () =>
     produce(searchParams, (draft) => {{
-      let sDt = wijmo.Globalize.format(
-        dtpMultiDateRef.current.getStartDateTime(),
-        'yyyyMMdd',
-      );
-      let eDt = wijmo.Globalize.format(
-        dtpMultiDateRef.current.getEndDateTime(),
-        'yyyyMMdd',
-      );
-
       draft[schCondCode.organization] =
         orgSchGrpCompRef.current.getOrganization();
       draft[schCondCode.scheduleGroup] =
         orgSchGrpCompRef.current.getScheduleGroup();
       draft[schCondCode.facility] = orgSchGrpCompRef.current.getFacility();
-      draft[schCondCode.startDate] = sDt;
-      draft[schCondCode.endDate] = eDt;
-      draft[schCondCode.dateType] = sectionSTRef.current;
+      draft[schCondCode.dateType] = dateTypeSTRef.current;
       draft[schCondCode.productionLine] = selectedProductLineSTRef.current
         .map((x) => x.WIP_LINE_ID)
         .toString();
-      draft.tool = toolSTRef.current;
-      draft[schCondCode.modelSuffix] = modelSTRef.current;
-	  
+      draft[schCondCode.productionSpecId] = productSpecificationIdSTRef.current;
+      draft[schCondCode.workOrder] = workOrderNameSTRef.current;	  
+    
 	  /* to-do: implement other conditions */
+    if (isSearchClicked) {{
+        let sDt = wijmo.Globalize.format(
+          dtpMultiDateRef.current.getStartDateTime(),
+          'yyyyMMdd',
+        );
+        let eDt = wijmo.Globalize.format(
+          dtpMultiDateRef.current.getEndDateTime(),
+          'yyyyMMdd',
+        );
+        draft[schCondCode.startDate] = sDt;
+        draft[schCondCode.endDate] = eDt;
+      }}
+
     }});
 
   const onUpdatedParameter = (param) => {{
-    assignComSrchCompParameters(param);
-    props.updateSearch(param);
+    if (param) {{
+      assignComSrchCompParameters(param);
+      if (!param[schCondCode.applyFlag]) {{
+        props.updateSearch(param);
+      }}
+    }}
   }};
 
   //Menu Paramete Received Event
-  const onReceivedParameter = (param) => {{
-    alert('MENU_PARAMETER : ' + param);
-  }};
+  const onReceivedParameter = (param) => {{}};
 
   const onConditionSetting = () => {{
     //Setting Current Parameter
-    comSrchCompRef.current.settingCurrentCondition(currentParam());
+    comSrchCompRef.current.settingCurrentCondition(currentParam(false));
   }};
+
+  //즐겨찾기 검색여부
+  const [applyFlag, setApplyFlag] = useState(false);
+  const assignApplyFlag = (data) => {{
+    applyFlagSTRef.current = data;
+    setApplyFlag(data);
+  }};
+  const applyFlagSTRef = useRef(applyFlag);
 
   const applyComSrchCompParameters = async () => {{
     if (!comSrchCompParametersSTRef.current) return;
 
     var param = comSrchCompParametersSTRef.current;
-    dtpMultiDateRef.current.setStartDateTime(
-      commonFunc.ParseDate_yyyyMMdd(param[schCondCode.startDate]),
-    );
-    dtpMultiDateRef.current.setEndDateTime(
-      commonFunc.ParseDate_yyyyMMdd(param[schCondCode.endDate]),
-    );
     orgSchGrpCompRef.current.setOrgSchGrData(
       param[schCondCode.organization],
       param[schCondCode.scheduleGroup],
-    );
+    );    
+    
+    assignProductSpecificationId(param[schCondCode.productionSpecId]);
+    assignWorkOrderName(param[schCondCode.workOrder]);
+	
     if (productLineCboDataSTRef.current.length > 0) {{
       productLineRef.current.checkedItems =
         productLineCboDataSTRef.current.filter((x) =>
           param[schCondCode.productionLine].split(',').includes(x.WIP_LINE_ID),
         );
     }}
-    assignModel(param[schCondCode.modelSuffix]);
-    assignWo(param.wo);
-	
-    /* to-do: implement others */
+
+    assignApplyFlag(param[schCondCode.applyFlag]);
   }};
 
   const onSearchClick = () => {{
-    comSrchCompRef.current.updateSearchParameter(currentParam());
+    comSrchCompRef.current.updateSearchParameter(currentParam(true));
   }};
 
   const onOrgSchGroupChanged = async () => {{
@@ -380,6 +421,40 @@ const SearchAreaComponent = (props) => {{
             onChangedScheduleGroups={{onOrgSchGroupChanged}}
           ></OrgSchGroupComponent>
         </CommonSearchItemComponent>
+        {{/* 월별/주별 Radio */}}
+        <CommonSearchItemComponent
+          isMandantory={{true}}
+          title={{langUtils.getLangData(langSet.object, 'PERIOD_CONDITION')}}
+        >
+          <div className="form-check" key={{1}}>
+            <input
+              type="radio"
+              className="form-check-input"
+              name="PERIOD_OPTION"
+              id={{'PERIOD_OPTION_1'}}
+              value="M"
+              checked={{dateTypeSTRef.current === 'M'}}
+              onChange={{onDateTypeChanged}}
+            />
+            <label htmlFor="PERIOD_OPTION_1">
+              {{langUtils.getLangData(langSet.object, 'MONTHLY')}}
+            </label>
+          </div>
+          <div className="form-check" key={{2}}>
+            <input
+              type="radio"
+              className="form-check-input"
+              name="PERIOD_OPTION"
+              id={{'PERIOD_OPTION_2'}}
+              value="W"
+              checked={{dateTypeSTRef.current === 'W'}}
+              onChange={{onDateTypeChanged}}
+            />
+            <label htmlFor="PERIOD_OPTION_2">
+              {{langUtils.getLangData(langSet.object, 'WEEKLY')}}
+            </label>
+          </div>
+        </CommonSearchItemComponent>        
         {{/* from-to picker */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
@@ -391,7 +466,7 @@ const SearchAreaComponent = (props) => {{
             changeTrigger="Direct"
             withTime={{false}}
             isRequired={{true}}
-            // selectionMode={{section === 'M' ? 'Month' : 'Week'}}
+            selectionMode={{dateTypeSTRef.current === 'M' ? 'Month' : 'Week'}}
           />
         </CommonSearchItemComponent>
         {{/* Product Line Combo */}}
@@ -419,26 +494,26 @@ const SearchAreaComponent = (props) => {{
             }}
           ></wjInput.MultiSelect>
         </CommonSearchItemComponent>
-        {{/* Model Text */}}
+        {{/* PRODUCT_SPECIFICATION_ID (Model Suffix) */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
-          title={{langUtils.getLangData(LangSet.object, 'Model')}}
+          title={{langUtils.getLangData(LangSet.object, 'PRODUCT_SPECIFICATION_ID')}}
         >
           <input
             type="text"
-            value={{modelSTRef.current}}
-            onChange={{(e) => assignModel(e.target.value)}}
+            value={{productSpecificationIdSTRef.current}}
+            onChange={{(e) => assignProductSpecificationId(e.target.value)}}
           ></input>
         </CommonSearchItemComponent>
         {{/* WO Text */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
-          title={{langUtils.getLangData(LangSet.object, 'W/O')}}
+          title={{langUtils.getLangData(LangSet.object, 'WORK_ORDER_NAME')}}
         >
           <input
             type="text"
-            value={{woSTRef.current}}
-            onChange={{(e) => assignWo(e.target.value)}}
+            value={{workOrderNameSTRef.current}}
+            onChange={{(e) => assignWorkOrderName(e.target.value)}}
           ></input>
         </CommonSearchItemComponent>
       </CommonSearchComponent>
@@ -452,8 +527,7 @@ export default SearchAreaComponent;
 	<js_result_area>
 		<![CDATA[import React, {{ useEffect, useState, useRef, useContext }} from 'react';
 import {{ useDispatch, useSelector }} from 'react-redux';
-import {{ MultiLangContext, langUtils }} from 'ecm_app_commonlib';
-import {{ showMessage }} from 'ecm_app_commonlib';
+import {{ MultiLangContext, langUtils, CommonGridContextMenu, showMessage, }} from 'ecm_app_commonlib';
 import * as wijmo from '@grapecity/wijmo';
 import {{ CollectionView }} from '@grapecity/wijmo';
 import * as wjGrid from '@grapecity/wijmo.react.grid';
@@ -461,10 +535,12 @@ import * as wjInput from '@grapecity/wijmo.react.input';
 import {0}Service from '../services/{0}Service';
 import commonFunc from '../../../common/components/commonFunc';
 import {{ Form }} from 'react-bootstrap';
+import SlideAreaComponent from '../../../common/components/SlideAreaComponent';
 import {{
   defaultMessage,
   schCondCode,
 }} from '../../../common/components/CommonVariables';
+import CommonExcelButton from '../../../common/components/CommonExcelButton';
 
 const ResultAreaComponent = (props) => {{
   let _ = require('lodash');
@@ -496,6 +572,9 @@ const ResultAreaComponent = (props) => {{
   const [gridRowCnt, setGridRowCnt] = useState(0);
   const [gridColumns, setGridColumns] = useState(getDefaultColumns());
 
+  const refGrid = useRef(null);
+  const refContextMenu = useRef(null);  
+
   useEffect(() => {{
     if (!props.searchParams) return;
 
@@ -519,6 +598,9 @@ const ResultAreaComponent = (props) => {{
       FROM_DATE: props.searchParams[schCondCode.startDate],
       TO_DATE: props.searchParams[schCondCode.startDate],
       WIP_LINE_ID: props.searchParams[schCondCode.productionLine] ?? '',
+      PRODUCT_SPECIFICATION_ID:
+        props.searchParams[schCondCode.productionSpecId],
+      WORK_ORDER_NAME: props.searchParams[schCondCode.workOrder],
     }});
 	*/
 
@@ -546,22 +628,30 @@ const ResultAreaComponent = (props) => {{
     <React.Fragment>
       <div className="flex_align_l">
         <h3>
-		  {{/* to-do: implement */}}
+		      {{/* to-do: implement */}}
           {{langUtils.getLangData(langSet.object, '', '')}}
           <span className="num_txt">{{gridRowCnt}}</span>
         </h3>
+        <div className="flex_align_r wid100 gutter8">
+          <CommonExcelButton  {{...props}}   refContextMenu = {{refContextMenu}} ></CommonExcelButton>
+        </div>        
       </div>
-      <div className="flex_align_row wid100" style={{ height: '50px' }}>
+      <div className="flex_align_row wid100" style={{{ height: '50px' }}}>
         <wjGrid.FlexGrid
           id="fGrid"
           itemFormatter={{itemFormatter}}
-		  {{/* to-do: implement */}}
+		      {{/* to-do: implement */}}
           selectionMode="Cell"
           itemsSource={{gridData}}
           itemsSourceChanged={{(s, e) => s.autoSizeColumns()}}
           initialized={{onGridInitialized}}
           loadedRows={{(s) => s.autoSizeColumns()}}
+          ref={{refGrid}}
         >
+          <wjGrid.FlexGridCellTemplate
+            cellType="RowHeader"
+            template={{commonFunc.gridHeadertemplateFunc}}
+          />        
           {{/* check */}}
           <wjGrid.FlexGridColumn
             header=" "
@@ -571,6 +661,15 @@ const ResultAreaComponent = (props) => {{
             width={{45}}
           />
         </wjGrid.FlexGrid>
+        <CommonGridContextMenu 
+          {{...props} }
+          ref = {{refContextMenu} }
+          refGrid={{refGrid}}
+          id={{"gridContext"}} 
+          isLayoutSetting={{false}}
+          isLayoutSave={{true}} 
+          isExcelExportTemplate={{false}}>
+        </CommonGridContextMenu>
       </div>
     </React.Fragment>
   );

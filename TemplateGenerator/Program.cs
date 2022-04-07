@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using TemplateGenerator;
@@ -41,26 +42,44 @@ static void Start()
         processor.CreateQuery(programName, SQLPath);
         processor.CreateJavaContents(programName, BEPath);
         processor.CreateJsxContents(programName, FEPath);
+
+        if (Directory.Exists(programNamePath))
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                Arguments = programNamePath,
+                FileName = "explorer.exe"
+            };
+
+            Process.Start(startInfo);
+        }
     }
 
     if (type == "2")
     {
-        var programName = ReceiveName();
+        var programName = Guid.NewGuid().ToString();
         var desktopRoot = Path.Combine(path, root);
         if (!Directory.Exists(desktopRoot))
             Directory.CreateDirectory(desktopRoot);
 
-        var programNamePath = Path.Combine(desktopRoot, programName);
-        if (!Directory.Exists(programNamePath))
-            Directory.CreateDirectory(programNamePath);
+        // var programNamePath = Path.Combine(desktopRoot, programName);
+        // if (!Directory.Exists(programNamePath))
+        //     Directory.CreateDirectory(programNamePath);
 
-        var FEPath = Path.Combine(programNamePath, "FE");
-        if (!Directory.Exists(FEPath))
-            Directory.CreateDirectory(FEPath);
+        // var FEPath = Path.Combine(programNamePath, "FE");
+        // if (!Directory.Exists(FEPath))
+        //     Directory.CreateDirectory(FEPath);
 
         var contentsToApply = ReceiveMultiLineInput("컬럼 정보 입력");
         var processor = new Processor();
-        processor.CreateGridCols(programName, FEPath, contentsToApply);
+        processor.CreateGridCols(programName, desktopRoot, contentsToApply);
+
+        var resultFile = Path.Combine(desktopRoot, $"{programName}_cols.json");
+        Console.WriteLine(resultFile);
+        if (File.Exists(resultFile))
+        {
+            Process.Start(new ProcessStartInfo { FileName = resultFile, UseShellExecute = true });
+        }
     }
 }
 
