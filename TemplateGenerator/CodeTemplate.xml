@@ -240,10 +240,10 @@ const SearchAreaComponent = (props) => {{
 
   //wo
   const [workOrderName, setWorkOrderName] = useState('');
-  const assignWorkOrderName = (data) => {
+  const assignWorkOrderName = (data) => {{
     workOrderNameSTRef.current = data;
     setWorkOrderName(data);
-  };
+  }};
   const workOrderNameSTRef = useRef(workOrderName);
 
   /* 공통 조회 comp */
@@ -593,16 +593,6 @@ const ResultAreaComponent = (props) => {{
    */
   const retrieveData = async () => {{
     /* to-do: implement */
-	/* 
-    const response = await service.getIQCRepairSelect({{
-      FROM_DATE: props.searchParams[schCondCode.startDate],
-      TO_DATE: props.searchParams[schCondCode.startDate],
-      WIP_LINE_ID: props.searchParams[schCondCode.productionLine] ?? '',
-      PRODUCT_SPECIFICATION_ID:
-        props.searchParams[schCondCode.productionSpecId],
-      WORK_ORDER_NAME: props.searchParams[schCondCode.workOrder],
-    }});
-	*/
 
     if (!response.data) {{
       return;
@@ -628,7 +618,6 @@ const ResultAreaComponent = (props) => {{
     <React.Fragment>
       <div className="flex_align_l">
         <h3>
-		      {{/* to-do: implement */}}
           {{langUtils.getLangData(langSet.object, '', '')}}
           <span className="num_txt">{{gridRowCnt}}</span>
         </h3>
@@ -636,11 +625,10 @@ const ResultAreaComponent = (props) => {{
           <CommonExcelButton  {{...props}}   refContextMenu = {{refContextMenu}} ></CommonExcelButton>
         </div>        
       </div>
-      <div className="flex_align_row wid100" style={{{ height: '50px' }}}>
+      <div className="flex_align_row wid100" style={{{{ height: '50px' }}}}>
         <wjGrid.FlexGrid
           id="fGrid"
           itemFormatter={{itemFormatter}}
-		      {{/* to-do: implement */}}
           selectionMode="Cell"
           itemsSource={{gridData}}
           itemsSourceChanged={{(s, e) => s.autoSizeColumns()}}
@@ -652,7 +640,6 @@ const ResultAreaComponent = (props) => {{
             cellType="RowHeader"
             template={{commonFunc.gridHeadertemplateFunc}}
           />        
-          {{/* check */}}
           <wjGrid.FlexGridColumn
             header=" "
             binding="active"
@@ -662,8 +649,8 @@ const ResultAreaComponent = (props) => {{
           />
         </wjGrid.FlexGrid>
         <CommonGridContextMenu 
-          {{...props} }
-          ref = {{refContextMenu} }
+          {{...props}}
+          ref = {{refContextMenu}}
           refGrid={{refGrid}}
           id={{"gridContext"}} 
           isLayoutSetting={{false}}
