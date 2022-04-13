@@ -203,10 +203,10 @@ import {{
 const SearchAreaComponent = (props) => {{
   const [searchParams, setSearchParams] = useState({{}});
   const [initComplete, setInitComplete] = useState(false);
-  const assignInitComplete = (data) => {
+  const assignInitComplete = (data) => {{
     initCompleteSTRef.current = data;
     setInitComplete(data);
-  };
+  }};
   const initCompleteSTRef = useRef(initComplete);
   
 
