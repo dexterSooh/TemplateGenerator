@@ -106,7 +106,10 @@
         @Autowired
         {0}Service service;
 
-    
+            @PostMapping("/api/production/**implement**")
+            public ResponseEntity **implement**(@RequestBody Map<String,Object> param) throws Exception {{
+                return service.**implement**(param);
+            }}    
     }}
     ]]>
 	</controller_code>
@@ -121,8 +124,8 @@
     public interface {0}Service {{
 	/* 
         ResponseEntity Temp1(Map<String, Object> params) throws Exception;
-        ResponseEntity Temp2(String param) throws Exception;    
 	*/
+        ResponseEntity Temp2(Map<String, Object> params) throws Exception;    
     }}
     ]]>
 	</service_code>
@@ -151,12 +154,12 @@
 
 		/*
         @Override
-        public ResponseEntity Temp1(String param) throws Exception {{
+        public ResponseEntity Temp1(String params) throws Exception {{
             Map<String,Object> inData = new HashMap<>();
             inData.put("LANGUAGE_ID", MDC.get("userLangID"));
-            inData.put("SCHEDULE_GROUP_ID", param);
+            inData.put("SCHEDULE_GROUP_ID", params);
 
-            Map<String,Object> result =
+            Map<String,Object>[] result =
                     solaceService.bizActorRequestMap(
                             inData,
                             "IN_DATA",
@@ -200,6 +203,12 @@ import {{
 const SearchAreaComponent = (props) => {{
   const [searchParams, setSearchParams] = useState({{}});
   const [initComplete, setInitComplete] = useState(false);
+  const assignInitComplete = (data) => {
+    initCompleteSTRef.current = data;
+    setInitComplete(data);
+  };
+  const initCompleteSTRef = useRef(initComplete);
+  
 
   //월별,주별 조건
   const [dateType, setDateType] = useState('M');
@@ -229,6 +238,22 @@ const SearchAreaComponent = (props) => {{
     setSelectedProductLine(data);
   }};
   const selectedProductLineSTRef = useRef(selectedProductLine);
+
+  /* Line Code 콤보 데이터 */
+  const [lineCodeCboData, setLineCodeCboData] = useState([]);
+  const assignLineCodeCboData = (data) => {{
+    lineCodeCboDataSTRef.current = data;
+    setLineCodeCboData(data);
+  }};
+  const lineCodeCboDataSTRef = useRef(lineCodeCboData);  
+
+/* Line Code selected value */
+  const [selectedLineCode, setSelectedLineCode] = useState('');
+  const assignSelectedLineCode = (data) => {{
+    selectedLineCodeSTRef.current = data;
+    setSelectedLineCode(data);
+  }};
+  const selectedLineCodeSTRef = useRef(selectedLineCode);  
 
   /* PRODUCT_SPECIFICATION_ID (Model Suffix) */
   const [productSpecificationId, setProductSpecificationId] = useState('');
@@ -262,7 +287,7 @@ const SearchAreaComponent = (props) => {{
   
 
   useEffect(() => {{
-    if (!initComplete) return;
+    if (!initCompleteSTRef.current) return;
 
     applyComSrchCompParameters();
   }}, [comSrchCompParameters]);
@@ -306,7 +331,7 @@ const SearchAreaComponent = (props) => {{
   const onOrgSchGroupCompInitilized = async () => {{
     await retrieveProductLineData();
     applyComSrchCompParameters();
-    setInitComplete(true);
+    assignInitComplete(true);
   }};
 
   const dispatch = useDispatch();
@@ -494,6 +519,23 @@ const SearchAreaComponent = (props) => {{
             }}
           ></wjInput.MultiSelect>
         </CommonSearchItemComponent>
+        {{/* LINE_CODE */}}
+        <CommonSearchItemComponent
+          isMandantory={{true}}
+          title={{langUtils.getLangData(LangSet.object, "LINE_CODE")}}
+        >
+          <wjInput.ComboBox
+            initialized={{assignSelectedLineCode}}
+            selectedValuePath="LINE_ID"
+            displayMemberPath="LINE_CODE"
+            itemsSource={{lineCodeCboData}}
+            selectedIndexChanged={{cboLineSelectedIndexChanged}}
+            selectedIndexChanged={{(e) => {{
+              assignSelectedLineCode(e.selectedValue);
+            }}}}            
+          />
+        </CommonSearchItemComponent>;
+        
         {{/* PRODUCT_SPECIFICATION_ID (Model Suffix) */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
@@ -582,10 +624,16 @@ const ResultAreaComponent = (props) => {{
   }}, [props.searchParams]);
 
   useEffect(() => {{
-    if (!gridData.length) return;
+    if (!grid) return;
 
     grid.autoSizeColumns();
-  }}, [gridData]);    
+  }}, [gridData]);
+
+  useEffect(() => {{
+    if (!grid) return;
+
+    grid.autoSizeColumns();
+  }}, [grid]);  
 
   /**
    * 조회
@@ -618,7 +666,7 @@ const ResultAreaComponent = (props) => {{
     <React.Fragment>
       <div className="flex_align_l">
         <h3>
-          {{langUtils.getLangData(langSet.object, '', '')}}
+          {{langUtils.getLangData(langSet.object, '**implement**', '')}}
           <span className="num_txt">{{gridRowCnt}}</span>
         </h3>
         <div className="flex_align_r wid100 gutter8">
@@ -629,24 +677,19 @@ const ResultAreaComponent = (props) => {{
         <wjGrid.FlexGrid
           id="fGrid"
           //itemFormatter={{itemFormatter}}
-          selectionMode="Cell"
+          selectionMode="Row"
           itemsSource={{gridData}}
           itemsSourceChanged={{(s, e) => s.autoSizeColumns()}}
           initialized={{onGridInitialized}}
           loadedRows={{(s) => s.autoSizeColumns()}}
+          columns={{gridColumns}}
+          //columnGroups={{gridColumns}}
           ref={{refGrid}}
         >
           <wjGrid.FlexGridCellTemplate
             cellType="RowHeader"
             template={{commonFunc.gridHeadertemplateFunc}}
-          />        
-          <wjGrid.FlexGridColumn
-            header=" "
-            binding="active"
-            allowResizing={{true}}
-            visible={{true}}
-            width={{45}}
-          />
+          />   
         </wjGrid.FlexGrid>
         <CommonGridContextMenu 
           {{...props}}
@@ -709,6 +752,12 @@ import {{ LayoutContainer }} from 'ecm_app_commonlib';
 
 const {0}Container = (props) => {{
   const [searchParams, setSearchParams] = useState(null);
+  const [initComplete, setInitComplete] = useState(false);
+  const assignInitComplete = (data) => {{
+    initCompleteSTRef.current = data;
+    setInitComplete(data);
+  }};
+  const initCompleteSTRef = useRef(initComplete);
 
   useEffect(() => {{}}, []);
 
