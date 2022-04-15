@@ -96,7 +96,7 @@ static void Start()
         var processor = new Processor();
         processor.CreateApi(programName, desktopRoot, inData, routingName);
 
-        var resultFile = Path.Combine(desktopRoot, $"{programName}_cols.json");
+        var resultFile = Path.Combine(desktopRoot, $"{programName}_api.json");
         Console.WriteLine(resultFile);
         if (File.Exists(resultFile))
         {

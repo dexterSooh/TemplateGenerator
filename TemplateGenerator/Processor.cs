@@ -204,7 +204,7 @@ namespace TemplateGenerator
 
             CreateFile(
                 Path.Combine(path, $"{programName}_api.json"),
-                lines);
+                result);
         }
 
         string GetEachParam(string paramContent)
