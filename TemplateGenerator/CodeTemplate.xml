@@ -881,8 +881,6 @@ export default {0}Container;
     ]]>
 	</api>
   <api_MDC_param>
-		<![CDATA[
-    LANGUAGE_ID,USER_ID,FACILITY_CODE,ORGANIZATION_ID,SCHEDULE_GROUP_ID
-    ]]>
+		<![CDATA[LANGUAGE_ID,USER_ID,FACILITY_CODE,ORGANIZATION_ID,SCHEDULE_GROUP_ID]]>
 	</api_MDC_param>  
 </codes>

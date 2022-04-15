@@ -217,9 +217,6 @@ namespace TemplateGenerator
             var inName = paramContent.Split("\t".ToCharArray())[0];
 
             var mdc = apiMdc.FirstOrDefault(x => inName.Contains(x));
-            var type = Console.ReadLine();
-            Console.WriteLine(inName);
-            Console.WriteLine(mdc[0]);
             if (mdc != null)
                 return ChangeMdc(mdc);
 
