@@ -315,7 +315,7 @@ const SearchAreaComponent = (props) => {{
         assignWipLineCboData(
           response.data.map((item) => {{
             if (
-              comSrchCompParametersSTRef.current[CondCode.wipLineId]
+              comSrchCompParametersSTRef.current[schCondCode.wipLineId]
                 .split(',')
                 .includes(item.WIP_LINE_ID)
             ) {{
@@ -372,7 +372,7 @@ const SearchAreaComponent = (props) => {{
         orgSchGrpCompRef.current.getScheduleGroup();
       draft[schCondCode.facility] = orgSchGrpCompRef.current.getFacility();
       draft[schCondCode.dateType] = dateTypeSTRef.current;
-      draft[CondCode.wipLineId] = selectedWipLineSTRef.current
+      draft[schCondCode.wipLineId] = selectedWipLineSTRef.current
         .map((x) => x.WIP_LINE_ID)
         .toString();
       draft[schCondCode.productionSpecId] = productSpecificationIdSTRef.current;
@@ -436,7 +436,7 @@ const SearchAreaComponent = (props) => {{
     if (wipLineCboDataSTRef.current.length > 0) {{
       wipLineRef.current.checkedItems =
         wipLineCboDataSTRef.current.filter((x) =>
-          param[CondCode.wipLineId].split(',').includes(x.WIP_LINE_ID),
+          param[schCondCode.wipLineId].split(',').includes(x.WIP_LINE_ID),
         );
     }}
 
@@ -550,14 +550,13 @@ const SearchAreaComponent = (props) => {{
         {{/* LINE_CODE */}}
         <CommonSearchItemComponent
           isMandantory={{true}}
-          title={{langUtils.getLangData(LangSet.object, "LINE_CODE")}}
+          title={{langUtils.getLangData(langSet.object, "LINE_CODE")}}
         >
           <wjInput.ComboBox
             initialized={{assignSelectedLineCode}}
             selectedValuePath="LINE_ID"
             displayMemberPath="LINE_CODE"
             itemsSource={{lineCodeCboData}}
-            selectedIndexChanged={{cboLineSelectedIndexChanged}}
             selectedIndexChanged={{(e) => {{
               assignSelectedLineCode(e.selectedValue);
             }}}}            
@@ -683,12 +682,13 @@ const ResultAreaComponent = (props) => {{
     const response = await service.**implement**({{
       FROM_DATE: props.searchParams[schCondCode.startDate],
       TO_DATE: props.searchParams[schCondCode.endDate],
-      WIP_LINE_ID: props.searchParams[CondCode.wipLineId] ?? '',
+      WIP_LINE_ID: props.searchParams[schCondCode.wipLineId] ?? '',
       LINE_ID: props.searchParams[schCondCode.productionLine] ?? '',
       PRODUCT_SPECIFICATION_ID: props.searchParams[schCondCode.productionSpecId],
     }});    
 
     //if (!response.data) {{
+    //  setGridData([]);
     //  return;
     //}}
 
