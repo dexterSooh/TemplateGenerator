@@ -183,7 +183,7 @@ namespace TemplateGenerator
                     .FirstOrDefault()?.ToString() ?? "");
 
             var apiName = route.Split('/').Last();
-            var param = @"Map<String, Object> params";
+            var param = @"Map<String, Object>";
             var fromDate = string.Empty;
             if (inData.ToUpper().Contains("FROM_DATE"))
             {
@@ -214,7 +214,7 @@ namespace TemplateGenerator
                     _doc?.Descendants(Enums.BaseCodeType.api_MDC_param.ToString())?
                     .DescendantNodes()?
                     .FirstOrDefault()?.ToString() ?? "").Split(',');
-            var inName = paramContent.Split("\t".ToCharArray())[0];
+            var inName = paramContent.Split(new string[] { "\\tab" }, StringSplitOptions.None)[0];
 
             if (apiMdc.Contains(inName))
                 return ChangeMdc(inName);
