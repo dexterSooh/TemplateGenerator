@@ -866,7 +866,17 @@ export default {0}Container;
         public ResponseEntity {1}({2} params) throws Exception {{
             Map<String,Object> inData = new HashMap<>();
 
-            {3}           
+            {3}  
+                        
+            {4}
+                    solaceService.bizActorRequestMap(
+                            inData,
+                            "IN_DATA",
+                            "OUT_DATA",
+                            "{5}");
+
+            return CommonUtil.successResponseData(result);
+
         }}
     ]]>
 	</api>

@@ -86,6 +86,8 @@ static void Start()
     {
         var routingName = ReceiveName("Route name", "ex)/api/masterData/generateMbomByBOM");
 
+        var bizName = ReceiveName("Biz name");
+
         var inData = ReceiveMultiLineInput("IN_DATA", "'Name | Type | Desc | 조회조건' 컬럼 포함");
 
         var programName = Guid.NewGuid().ToString();
@@ -94,7 +96,7 @@ static void Start()
             Directory.CreateDirectory(desktopRoot);
 
         var processor = new Processor();
-        processor.CreateApi(programName, desktopRoot, inData, routingName);
+        processor.CreateApi(programName, desktopRoot, inData, routingName, bizName);
 
         var resultFile = Path.Combine(desktopRoot, $"{programName}_api.json");
         Console.WriteLine(resultFile);

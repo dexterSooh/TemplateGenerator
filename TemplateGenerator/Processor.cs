@@ -173,7 +173,7 @@ namespace TemplateGenerator
                 lines);
         }
 
-        public void CreateApi(string programName, string path, string inData, string route)
+        public void CreateApi(string programName, string path, string inData, string route, string bizName)
         {
             //{binding: '**',header: langUtils.getLangData(langSet.object,'**','**',),width: 50,visible: false,},
             var apiTemplate =
@@ -200,7 +200,7 @@ namespace TemplateGenerator
                 .Where(x => !string.IsNullOrEmpty(x) && !x.ToUpper().Contains("FROM_DATE") && !x.ToUpper().Contains("FROM_DATE"))
                 .Select(x => GetEachParam(x)));
 
-            var result = string.Format(apiTemplate, route, apiName, param, lines);
+            var result = string.Format(apiTemplate, route, apiName, param, lines, "Map<String,Object>[] result =", bizName);
 
             CreateFile(
                 Path.Combine(path, $"{programName}_api.json"),
@@ -214,10 +214,14 @@ namespace TemplateGenerator
                     _doc?.Descendants(Enums.BaseCodeType.api_MDC_param.ToString())?
                     .DescendantNodes()?
                     .FirstOrDefault()?.ToString() ?? "").Split(',');
-            var inName = paramContent.Split(new string[] { "\\tab" }, StringSplitOptions.None)[0];
+            var inName = paramContent.Split("\t".ToCharArray())[0];
 
-            if (apiMdc.Contains(inName))
-                return ChangeMdc(inName);
+            var mdc = apiMdc.FirstOrDefault(x => inName.Contains(x));
+            var type = Console.ReadLine();
+            Console.WriteLine(inName);
+            Console.WriteLine(mdc[0]);
+            if (mdc != null)
+                return ChangeMdc(mdc);
 
             if (paramContent.ToLower().Contains("null"))
                 return @$"if (!StringUtil.isEmpty((String) params.get(""{inName}""))) inData.put(""{inName}"", params.get(""{inName}""));";
