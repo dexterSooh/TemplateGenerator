@@ -1,4 +1,5 @@
-﻿using System;
+﻿//TODO: API GANERATION
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -164,12 +165,83 @@ namespace TemplateGenerator
 
             var lines = string.Join("\n",
                 contentsToApply.Split(Environment.NewLine).Where(x => !string.IsNullOrEmpty(x))
-                .Select(x => new { Binding = x.Split('\t').FirstOrDefault(), Visible = x.Split('\t')[4].ToLower() })
-                .Select(x => string.Format(gridColTemplate, x.Binding, x.Visible)));
+                .Select(x => new { Binding = x.Split('\t').FirstOrDefault(), Visible = x.Split('\t')[4].ToLower(), Align = x.Split('\t')[5].ToLower() })
+                .Select(x => string.Format(gridColTemplate, x.Binding, x.Visible, x.Align)));
 
             CreateFile(
                 Path.Combine(path, $"{programName}_cols.json"),
                 lines);
+        }
+
+        public void CreateApi(string programName, string path, string inData, string route)
+        {
+            //{binding: '**',header: langUtils.getLangData(langSet.object,'**','**',),width: 50,visible: false,},
+            var apiTemplate =
+                GetCData(
+                    _doc?.Descendants(Enums.BaseCodeType.api.ToString())?
+                    .DescendantNodes()?
+                    .FirstOrDefault()?.ToString() ?? "");
+
+            var apiName = route.Split('/').Last();
+            var param = @"Map<String, Object> params";
+            var fromDate = string.Empty;
+            if (inData.ToUpper().Contains("FROM_DATE"))
+            {
+                fromDate = @"inData.put(""FROM_DATE"", new SimpleDateFormat(""yyyyMMdd"").parse(params.get(""FROM_DATE"").toString()));";
+            }
+            var toDate = string.Empty;
+            if (inData.ToUpper().Contains("TO_DATE"))
+            {
+                toDate = @"inData.put(""TO_DATE"", new SimpleDateFormat(""yyyyMMdd"").parse(params.get(""TO_DATE"").toString()));";
+            }
+
+            var lines = string.Join("\n",
+                inData.Split(Environment.NewLine)
+                .Where(x => !string.IsNullOrEmpty(x) && !x.ToUpper().Contains("FROM_DATE") && !x.ToUpper().Contains("FROM_DATE"))
+                .Select(x => GetEachParam(x)));
+
+            var result = string.Format(apiTemplate, route, apiName, param, lines);
+
+            CreateFile(
+                Path.Combine(path, $"{programName}_api.json"),
+                lines);
+        }
+
+        string GetEachParam(string paramContent)
+        {
+            var apiMdc =
+                GetCData(
+                    _doc?.Descendants(Enums.BaseCodeType.api_MDC_param.ToString())?
+                    .DescendantNodes()?
+                    .FirstOrDefault()?.ToString() ?? "").Split(',');
+            var inName = paramContent.Split("\t".ToCharArray())[0];
+
+            if (apiMdc.Contains(inName))
+                return ChangeMdc(inName);
+
+            if (paramContent.ToLower().Contains("null"))
+                return @$"if (!StringUtil.isEmpty((String) params.get(""{inName}""))) inData.put(""{inName}"", params.get(""{inName}""));";
+
+            return string.Empty;
+        }
+
+        string ChangeMdc(string mdc)
+        {
+            switch (mdc)
+            {
+                case "LANGUAGE_ID":
+                    return @"inData.put(""LANGUAGE_ID"", MDC.get(""userLangID""));";
+                case "USER_ID":
+                    return @"inData.put(""USER_ID"", MDC.get(""userId""));";
+                case "FACILITY_CODE":
+                    return @"inData.put(""FACILITY_CODE"", MDC.get(""userFacility""));";
+                case "ORGANIZATION_ID":
+                    return @"inData.put(""ORGANIZATION_ID"", MDC.get(""userORGANIZATION_ID_LIST""));";
+                case "SCHEDULE_GROUP_ID":
+                    return @"inData.put(""LANGUSCHEDULE_GROUP_IDAGE_ID"", MDC.get(""userSCHEDULE_GROUP_ID_LIST""));";
+                default:
+                    return "";
+            }
         }
 
         void CreateFile(string fileName, string contents)

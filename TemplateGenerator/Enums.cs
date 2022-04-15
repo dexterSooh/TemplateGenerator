@@ -27,6 +27,14 @@ namespace TemplateGenerator
             /// </summary>
             grid_col,
             /// <summary>
+            /// Api
+            /// </summary>
+            api,
+            /// <summary>
+            /// Api mdc 항목
+            /// </summary>
+            api_MDC_param,
+            /// <summary>
             /// SearchAreaComponent
             /// </summary>
             js_search_area,
@@ -42,6 +50,6 @@ namespace TemplateGenerator
             /// ContainerComponent
             /// </summary>
             js_container
-        }    
+        }
     }
 }

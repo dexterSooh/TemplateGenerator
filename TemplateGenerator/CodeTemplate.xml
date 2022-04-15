@@ -159,7 +159,6 @@
             inData.put("LANGUAGE_ID", MDC.get("userLangID"));
             inData.put("SCHEDULE_GROUP_ID", params);
 
-            Map<String,Object>[] result =
                     solaceService.bizActorRequestMap(
                             inData,
                             "IN_DATA",
@@ -173,7 +172,7 @@
     ]]>
 	</implement_code>
 	<grid_col>
-		<![CDATA[{{binding: '{0}',header: langUtils.getLangData(langSet.object,'{0}','{0}',),width: 50,visible: {1},}},]]>
+		<![CDATA[{{binding: '{0}',header: langUtils.getLangData(langSet.object,'{0}','{0}',),width: 50,visible: {1},align: '{2}',}},]]>
 	</grid_col>
 	<js_search_area>
 		<![CDATA[import React, {{
@@ -219,25 +218,25 @@ const SearchAreaComponent = (props) => {{
   const dateTypeSTRef = useRef(dateType);  
   const onDateTypeChanged = (e) => assignDateType(e);
 
-  /* 생산라인 component ref */
-  const productLineRef = useRef();
+  /* WIP LINE component ref */
+  const wipLineRef = useRef();
   
   /* 생산라인 콤보 데이터 */
-  const [productLineCboData, setProductLineCboData] = useState([]);
-  const assignProductLineCboData = (data) => {{
-    productLineCboDataSTRef.current = data;
-    assignSelectedProductLine(data.filter((item) => item.SELECTED == true));
-    setProductLineCboData(data);
+  const [wipLineCboData, setWipLineCboData] = useState([]);
+  const assignWipLineCboData = (data) => {{
+    wipLineCboDataSTRef.current = data;
+    assignSelectedWipLine(data.filter((item) => item.SELECTED == true));
+    setWipLineCboData(data);
   }};
-  const productLineCboDataSTRef = useRef(productLineCboData);
+  const wipLineCboDataSTRef = useRef(wipLineCboData);
 
   /* 생산라인 selected value */
-  const [selectedProductLine, setSelectedProductLine] = useState([]);
-  const assignSelectedProductLine = (data) => {{
-    selectedProductLineSTRef.current = data;
-    setSelectedProductLine(data);
+  const [selectedWipLine, setSelectedWipLine] = useState([]);
+  const assignSelectedWipLine = (data) => {{
+    selectedWipLineSTRef.current = data;
+    setSelectedWipLine(data);
   }};
-  const selectedProductLineSTRef = useRef(selectedProductLine);
+  const selectedWipLineSTRef = useRef(selectedWipLine);
 
   /* Line Code 콤보 데이터 */
   const [lineCodeCboData, setLineCodeCboData] = useState([]);
@@ -263,13 +262,22 @@ const SearchAreaComponent = (props) => {{
   }};
   const productSpecificationIdSTRef = useRef(productSpecificationId);
 
-  //wo
+  //WORK_ORDER_NAME
   const [workOrderName, setWorkOrderName] = useState('');
   const assignWorkOrderName = (data) => {{
     workOrderNameSTRef.current = data;
     setWorkOrderName(data);
   }};
   const workOrderNameSTRef = useRef(workOrderName);
+
+  const reworkRef = useRef();
+  //rework Combo Data Source
+  const [reworkCboData, setReworkCboData] = useState([]);
+  const assignReworkCboData = (data) => {{
+    reworkCboDataSTRef.current = data;
+    setReworkCboData(data);
+  }};
+  const reworkCboDataSTRef = useRef(reworkCboData);  
 
   /* 공통 조회 comp */
   const [comSrchCompParameters, setComSrchCompParameters] = useState(null);
@@ -293,9 +301,9 @@ const SearchAreaComponent = (props) => {{
   }}, [comSrchCompParameters]);
 
   /**
-   * Product Line Combo data 조회
+   * Wip Line Combo data 조회
    */
-  const retrieveProductLineData = async () => {{
+  const retrieveWipLineData = async () => {{
     if (orgSchGrpCompRef?.current == null) return;
 
     const scheduleGroupDatas = orgSchGrpCompRef.current.getScheduleGroup();
@@ -304,10 +312,10 @@ const SearchAreaComponent = (props) => {{
     const response = await service.getWipLineM(param);
     if (applyFlagSTRef.current) {{
       if (comSrchCompParametersSTRef.current) {{
-        assignProductLineCboData(
+        assignWipLineCboData(
           response.data.map((item) => {{
             if (
-              comSrchCompParametersSTRef.current[schCondCode.productionLine]
+              comSrchCompParametersSTRef.current[CondCode.wipLineId]
                 .split(',')
                 .includes(item.WIP_LINE_ID)
             ) {{
@@ -319,7 +327,7 @@ const SearchAreaComponent = (props) => {{
         assignApplyFlag(false);
       }}
     }} else {{
-      assignProductLineCboData(
+      assignWipLineCboData(
         response.data.map((item) => {{
           item.SELECTED = true;
           return item;
@@ -328,8 +336,26 @@ const SearchAreaComponent = (props) => {{
     }}
   }};
 
+  /**
+   * Rework combo data 조회
+   * @returns
+   */
+  const retrieveReworkData = async () => {{
+    if (orgSchGrpCompRef?.current == null) return;
+
+    const response = await service.getCodeItemCombo(
+      {{
+        FACILITY_CODE: 'ALL',
+        BUSINESS_USAGE_TYPE_CODE: 'FLAG',
+      }},
+      true,
+    );
+    assignReworkCboData(response.data);
+  }};  
+
   const onOrgSchGroupCompInitilized = async () => {{
-    await retrieveProductLineData();
+    await retrieveWipLineData();
+    await retrieveReworkData();
     applyComSrchCompParameters();
     assignInitComplete(true);
   }};
@@ -346,11 +372,12 @@ const SearchAreaComponent = (props) => {{
         orgSchGrpCompRef.current.getScheduleGroup();
       draft[schCondCode.facility] = orgSchGrpCompRef.current.getFacility();
       draft[schCondCode.dateType] = dateTypeSTRef.current;
-      draft[schCondCode.productionLine] = selectedProductLineSTRef.current
+      draft[CondCode.wipLineId] = selectedWipLineSTRef.current
         .map((x) => x.WIP_LINE_ID)
         .toString();
       draft[schCondCode.productionSpecId] = productSpecificationIdSTRef.current;
       draft[schCondCode.workOrder] = workOrderNameSTRef.current;	  
+      draft.rework = reworkRef.current.selectedValue;
     
 	  /* to-do: implement other conditions */
     if (isSearchClicked) {{
@@ -404,11 +431,12 @@ const SearchAreaComponent = (props) => {{
     
     assignProductSpecificationId(param[schCondCode.productionSpecId]);
     assignWorkOrderName(param[schCondCode.workOrder]);
+    reworkRef.current.selectedValue = param.rework;
 	
-    if (productLineCboDataSTRef.current.length > 0) {{
-      productLineRef.current.checkedItems =
-        productLineCboDataSTRef.current.filter((x) =>
-          param[schCondCode.productionLine].split(',').includes(x.WIP_LINE_ID),
+    if (wipLineCboDataSTRef.current.length > 0) {{
+      wipLineRef.current.checkedItems =
+        wipLineCboDataSTRef.current.filter((x) =>
+          param[CondCode.wipLineId].split(',').includes(x.WIP_LINE_ID),
         );
     }}
 
@@ -420,7 +448,7 @@ const SearchAreaComponent = (props) => {{
   }};
 
   const onOrgSchGroupChanged = async () => {{
-    await retrieveProductLineData();
+    await retrieveWipLineData();
   }};  
 
   return (
@@ -497,25 +525,25 @@ const SearchAreaComponent = (props) => {{
         {{/* Product Line Combo */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
-          title={{langUtils.getLangData(langSet.object, 'Product Line')}}
+          title={{langUtils.getLangData(langSet.object, 'WIP_LINE_CODE')}}
         >
           <wjInput.MultiSelect
-            initialized={{(s) => (productLineRef.current = s)}}
+            initialized={{(s) => (wipLineRef.current = s)}}
             placeholder={{langUtils.getLangData(langSet.object, 'Select')}}
             showSelectAllCheckbox={{true}}
             headerFormat={{
-              selectedProductLineSTRef.current.length == 0
+              selectedWipLineSTRef.current.length == 0
                 ? ''
                 : `${{
-                    selectedProductLineSTRef.current[0]['WIP_LINE_CODE']
-                  }} other ${{selectedProductLineSTRef.current.length - 1}}`
+                    selectedWipLineSTRef.current[0]['WIP_LINE_CODE']
+                  }} other ${{selectedWipLineSTRef.current.length - 1}}`
             }}
             displayMemberPath="WIP_LINE_CODE"
             selectedValuePath="WIP_LINE_ID"
             checkedMemberPath="SELECTED"
-            itemsSource={{productLineCboData}}
+            itemsSource={{wipLineCboData}}
             checkedItemsChanged={{(e) =>
-              assignSelectedProductLine(e.checkedItems)
+              assignSelectedWipLine(e.checkedItems)
             }}
           ></wjInput.MultiSelect>
         </CommonSearchItemComponent>
@@ -547,7 +575,7 @@ const SearchAreaComponent = (props) => {{
             onChange={{(e) => assignProductSpecificationId(e.target.value)}}
           ></input>
         </CommonSearchItemComponent>
-        {{/* WO Text */}}
+        {{/* WORK_ORDER_NAME Text */}}
         <CommonSearchItemComponent
           isMandantory={{false}}
           title={{langUtils.getLangData(langSet.object, 'WORK_ORDER_NAME')}}
@@ -559,6 +587,18 @@ const SearchAreaComponent = (props) => {{
           ></input>
         </CommonSearchItemComponent>
       </CommonSearchComponent>
+      {{/* REWORK Combo */}}
+      <CommonSearchItemComponent
+        isMandantory={{false}}
+        title={{langUtils.getLangData(langSet.object, 'REWORK')}}
+      >
+        <wjInput.ComboBox
+          initialized={{(s) => (reworkRef.current = s)}}
+          displayMemberPath="BUSINESS_USAGE_CODE_ID_DESC"
+          selectedValuePath="BUSINESS_USAGE_CODE_ID"
+          itemsSource={{reworkCboData}}
+        ></wjInput.ComboBox>
+      </CommonSearchItemComponent>      
     </>
   );
 }};
@@ -640,7 +680,13 @@ const ResultAreaComponent = (props) => {{
    * @returns
    */
   const retrieveData = async () => {{
-    /* to-do: implement */
+    const response = await service.**implement**({{
+      FROM_DATE: props.searchParams[schCondCode.startDate],
+      TO_DATE: props.searchParams[schCondCode.endDate],
+      WIP_LINE_ID: props.searchParams[CondCode.wipLineId] ?? '',
+      LINE_ID: props.searchParams[schCondCode.productionLine] ?? '',
+      PRODUCT_SPECIFICATION_ID: props.searchParams[schCondCode.productionSpecId],
+    }});    
 
     //if (!response.data) {{
     //  return;
@@ -676,6 +722,7 @@ const ResultAreaComponent = (props) => {{
       <div className="flex_align_row wid100" style={{{{ height: '50px' }}}}>
         <wjGrid.FlexGrid
           id="fGrid"
+          autoGenerateColumns={{false}}
           //itemFormatter={{itemFormatter}}
           selectionMode="Row"
           itemsSource={{gridData}}
@@ -719,7 +766,7 @@ export default class {0}Service {{
   }}
   
   /**
-   * ProductLine
+   * wipLine
    * @returns
    */
   async getWipLineM(ids) {{
@@ -730,6 +777,27 @@ export default class {0}Service {{
       SCHEDULE_GROUP_ID: ids,
     }});
     console.log('object', body);
+    try {{
+      this.baseService.setAuthorization(
+        this.sessionService.getSessionStorageValue('user'),
+      );
+      response = await this.baseService.fnRest(method, url, body);
+    }} catch (error) {{
+      response = error;
+    }}
+    return response.data;
+  }}  
+
+  /**
+   * Rework
+   * BR_MMD_CodeItem_SelectComboWithAll
+   * @returns
+   */
+  async getCodeItemCombo(param) {{
+    let response;
+    const method = 'POST';
+    const url = '/api/common/getCodeItemComboWithAll';
+    const body = JSON.stringify(param);
     try {{
       this.baseService.setAuthorization(
         this.sessionService.getSessionStorageValue('user'),
@@ -782,4 +850,29 @@ const {0}Container = (props) => {{
 export default {0}Container;
     ]]>
 	</js_container>
+  <api>
+		<![CDATA[
+    //Controller
+    @PostMapping("{0}")
+    public ResponseEntity {1}(@RequestBody {2})  throws Exception {{
+        return service.{1}(param);
+    }}
+
+    //Interface Service
+    ResponseEntity {1}({2} params) throws Exception;
+
+    //Implement
+        @Override
+        public ResponseEntity {1}({2} params) throws Exception {{
+            Map<String,Object> inData = new HashMap<>();
+
+            {3}           
+        }}
+    ]]>
+	</api>
+  <api_MDC_param>
+		<![CDATA[
+    LANGUAGE_ID,USER_ID,FACILITY_CODE,ORGANIZATION_ID,SCHEDULE_GROUP_ID
+    ]]>
+	</api>  
 </codes>
