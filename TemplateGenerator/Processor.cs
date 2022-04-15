@@ -222,6 +222,7 @@ namespace TemplateGenerator
 
             if (paramContent.ToLower().Contains("null"))
                 return @$"if (!StringUtil.isEmpty((String) params.get(""{inName}""))) inData.put(""{inName}"", params.get(""{inName}""));";
+            else return @$"inData.put(""{inName}"", params.get(""{inName}""));";
 
             return string.Empty;
         }
