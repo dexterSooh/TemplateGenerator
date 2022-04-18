@@ -252,7 +252,7 @@ const SearchAreaComponent = (props) => {{
     selectedLineCodeSTRef.current = data;
     setSelectedLineCode(data);
   }};
-  const selectedLineCodeSTRef = useRef(selectedLineCode);  
+  const selectedLineCodeSTRef = useRef(selectedLineCode)
 
   /* PRODUCT_SPECIFICATION_ID (Model Suffix) */
   const [productSpecificationId, setProductSpecificationId] = useState('');
