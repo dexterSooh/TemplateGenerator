@@ -379,7 +379,7 @@ const SearchAreaComponent = (props) => {{
       draft[schCondCode.workOrder] = workOrderNameSTRef.current;	  
       draft.rework = reworkRef.current.selectedValue;
     
-	  /* to-do: implement other conditions */
+	  /* TODO: implement other conditions */
     if (isSearchClicked) {{
         let sDt = wijmo.Globalize.format(
           dtpMultiDateRef.current.getStartDateTime(),
@@ -643,7 +643,7 @@ const ResultAreaComponent = (props) => {{
   let langSet = useContext(MultiLangContext);
 
   const getDefaultColumns = () => {{
-    /* to-do: implement */
+    /* TODO: implement */
     return [];
   }};
 
@@ -808,7 +808,7 @@ export default class {0}Service {{
     }}
     return response.data;
   }}  
-  /* to-do: implement */
+  /* TODO: implement */
 }}
     ]]>
 	</js_service>
