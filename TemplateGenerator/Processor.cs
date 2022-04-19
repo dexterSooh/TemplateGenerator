@@ -213,7 +213,7 @@ namespace TemplateGenerator
                 .Where(x => !string.IsNullOrEmpty(x))
                 .Select(x => GetRestParam(x))).TrimStart();
 
-            var restCall = @$"http://LOCALHOST:8084/{apiName}{Environment.NewLine} {{{Environment.NewLine}{restPayload}{Environment.NewLine}}}";
+            var restCall = @$"http://LOCALHOST:8084/{apiName}/production/{Environment.NewLine} {{{Environment.NewLine}{restPayload}{Environment.NewLine}}}";
 
             var authQueryTemplate =
                 GetCData(
