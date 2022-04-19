@@ -84,9 +84,16 @@ static void Start()
 
     if (type == "3")
     {
-        var routingName = ReceiveName("Route name", "ex)/api/masterData/generateMbomByBOM");
+        // var routingName = ReceiveName("Route name", "ex)/api/masterData/generateMbomByBOM");
 
-        var bizName = ReceiveName("Biz name");
+        var meta = ReceiveName("1:조회용(prefix: get), 2:등록,수정,삭제(prefix: reg)");
+        var isForSearch = meta.ToUpper() == "1";
+        var bizName = ReceiveName("Biz Rule Id");
+        var controllerName = string.Join<string>("", bizName.Split('_').Skip(2));
+        var routingName = $"/api/production/{(isForSearch ? "get" : "reg")}{controllerName}";
+
+        //BR_POM_Worktime_Select
+
 
         var inData = ReceiveMultiLineInput("IN_DATA", "'Name | Type | Desc | 조회조건' 컬럼 포함");
 

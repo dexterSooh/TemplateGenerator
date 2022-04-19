@@ -1,6 +1,7 @@
 ﻿//TODO: API GANERATION
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -200,11 +201,80 @@ namespace TemplateGenerator
                 .Where(x => !string.IsNullOrEmpty(x) && !x.ToUpper().Contains("FROM_DATE") && !x.ToUpper().Contains("FROM_DATE"))
                 .Select(x => GetEachParam(x)));
 
-            var result = string.Format(apiTemplate, route, apiName, param, lines, "Map<String,Object>[] result =", bizName);
+            var clientLines =
+                string.Join("\n",
+                inData.Split(Environment.NewLine)
+                .Where(x => !string.IsNullOrEmpty(x))
+                .Select(x => GetParam(x))).TrimStart();
+            var client = $"const response = await service.{apiName}({{{Environment.NewLine} {clientLines}}}); ";
+
+            var restPayload =
+                string.Join("\n",
+                inData.Split(Environment.NewLine)
+                .Where(x => !string.IsNullOrEmpty(x))
+                .Select(x => GetRestParam(x))).TrimStart();
+
+            var restCall = @$"http://LOCALHOST:8084/{apiName}{Environment.NewLine} {{{Environment.NewLine}{restPayload}{Environment.NewLine}}}";
+
+
+            var result = string.Format(apiTemplate, route, apiName, param, lines, "Map<String,Object>[] result =", bizName, client, restCall);
 
             CreateFile(
                 Path.Combine(path, $"{programName}_api.json"),
                 result);
+        }
+
+        public string ToCamelCase(string str)
+        {
+            return string.Join<string>("", str.ToLower().Split('_')
+            .Select((x, i) => i == 0 ? x : new string(x.ToCharArray()
+            .Select((c, ci) => ci == 0 ? Char.ToUpper(c) : c).ToArray())));
+        }
+
+        string GetParam(string param)
+        {
+            var inName = param.Split("\t".ToCharArray())[0];
+
+            switch (inName)
+            {
+                case "LANGUAGE_ID":
+                case "USER_ID":
+                case "FACILITY_CODE":
+                case "ORGANIZATION_ID":
+                case "SCHEDULE_GROUP_ID":
+                    return "";
+
+                case "FROM_DATE": return $"FROM_DATE: props.searchParams[schCondCode.startDate],{Environment.NewLine}";
+                case "TO_DATE": return $"TO_DATE: props.searchParams[schCondCode.endDate],{Environment.NewLine}";
+                case "WIP_LINE_ID": return $"WIP_LINE_ID: props.searchParams[schCondCode.wipLineId] ?? '',{Environment.NewLine}";
+                case "LINE_ID": return $"LINE_ID: props.searchParams[schCondCode.productionLine] ?? '',{Environment.NewLine}";
+                case "PRODUCT_SPECIFICATION_ID": return $"PRODUCT_SPECIFICATION_ID: props.searchParams[schCondCode.productionSpecId],{Environment.NewLine}";
+                default:
+                    return $"{inName}: props.searchParams.{ToCamelCase(inName)},";
+            }
+        }
+
+        string GetRestParam(string param)
+        {
+            var inName = param.Split("\t".ToCharArray())[0];
+
+            switch (inName)
+            {
+                case "LANGUAGE_ID":
+                case "USER_ID":
+                case "FACILITY_CODE":
+                case "ORGANIZATION_ID":
+                case "SCHEDULE_GROUP_ID":
+                    return "";
+
+                case "FROM_DATE": return @"""FROM_DATE"": ""20211001"",";
+                case "TO_DATE": return @"""TO_DATE"": ""20211031"",";
+                case "WIP_LINE_ID": return @"""WIP_LINE_ID"": ""4910195,2729094,2729095,2729096"",";
+                case "LINE_ID": return @"""LINE_ID"": ""VNHP-01-062,VNHP-01-070,VNHP-01-001,VNHP-01-002,VNHP-01-003,VNHP-01-001"",";
+                case "PRODUCT_SPECIFICATION_ID": return @"""PRODUCT_SPECIFICATION_ID"": """"";
+                default:
+                    return $@"""{inName}"": """"";
+            }
         }
 
         string GetEachParam(string paramContent)

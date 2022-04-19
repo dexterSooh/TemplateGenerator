@@ -337,6 +337,19 @@ const SearchAreaComponent = (props) => {{
   }};
 
   /**
+   * Line Code Combo data 조회
+   */
+  const retrieveLineCodeData = async () => {{
+    if (orgSchGrpCompRef?.current == null) return;
+
+    const response = await searchConditionService.getLineCombo(
+      orgSchGrpCompRef.current.getFacility(),
+      orgSchGrpCompRef.current.getOrganization(),
+    );
+    assignLineCodeCboData(response.data);
+  }};
+
+  /**
    * Rework combo data 조회
    * @returns
    */
@@ -356,6 +369,7 @@ const SearchAreaComponent = (props) => {{
   const onOrgSchGroupCompInitilized = async () => {{
     await retrieveWipLineData();
     await retrieveReworkData();
+    await retrieveLineCodeData();
     applyComSrchCompParameters();
     assignInitComplete(true);
   }};
@@ -613,6 +627,7 @@ import * as wijmo from '@grapecity/wijmo';
 import {{ CollectionView }} from '@grapecity/wijmo';
 import * as wjGrid from '@grapecity/wijmo.react.grid';
 import * as wjInput from '@grapecity/wijmo.react.input';
+import SearchConditionService from '../../../common/services/SearchConditionService';
 import {0}Service from '../services/{0}Service';
 import commonFunc from '../../../common/components/commonFunc';
 import {{ Form }} from 'react-bootstrap';
@@ -650,6 +665,7 @@ const ResultAreaComponent = (props) => {{
   const dispatch = useDispatch();
   // const [gridData, setGridData] = useState([]);
   const service = new {0}Service(dispatch, langSet);
+  const searchConditionService = new SearchConditionService(dispatch, langSet);
   const [gridRowCnt, setGridRowCnt] = useState(0);
   const [gridColumns, setGridColumns] = useState(getDefaultColumns());
 
@@ -854,8 +870,8 @@ export default {0}Container;
 		<![CDATA[
     //Controller
     @PostMapping("{0}")
-    public ResponseEntity {1}(@RequestBody {2})  throws Exception {{
-        return service.{1}(param);
+    public ResponseEntity {1}(@RequestBody {2} params)  throws Exception {{
+        return service.{1}(params);
     }}
 
     //Interface Service
@@ -878,8 +894,15 @@ export default {0}Container;
             return CommonUtil.successResponseData(result);
 
         }}
+
+    //client
+    {6}
+
+    //rest call
+    {7}
     ]]>
 	</api>
+
   <api_MDC_param>
 		<![CDATA[LANGUAGE_ID,USER_ID,FACILITY_CODE,ORGANIZATION_ID,SCHEDULE_GROUP_ID]]>
 	</api_MDC_param>  
