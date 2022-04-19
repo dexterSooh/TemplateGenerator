@@ -206,7 +206,7 @@ namespace TemplateGenerator
                 inData.Split(Environment.NewLine)
                 .Where(x => !string.IsNullOrEmpty(x))
                 .Select(x => GetParam(x))).TrimStart();
-            var client = $"const response = await service.{apiName}({{{Environment.NewLine} {clientLines}}}); ";
+            var client = $"const response = await service.{apiName}({{{Environment.NewLine} {clientLines}{Environment.NewLine}}}); ";
 
             var restPayload =
                 string.Join("\n",
@@ -244,11 +244,11 @@ namespace TemplateGenerator
                 case "SCHEDULE_GROUP_ID":
                     return "";
 
-                case "FROM_DATE": return $"FROM_DATE: props.searchParams[schCondCode.startDate],{Environment.NewLine}";
-                case "TO_DATE": return $"TO_DATE: props.searchParams[schCondCode.endDate],{Environment.NewLine}";
-                case "WIP_LINE_ID": return $"WIP_LINE_ID: props.searchParams[schCondCode.wipLineId] ?? '',{Environment.NewLine}";
-                case "LINE_ID": return $"LINE_ID: props.searchParams[schCondCode.productionLine] ?? '',{Environment.NewLine}";
-                case "PRODUCT_SPECIFICATION_ID": return $"PRODUCT_SPECIFICATION_ID: props.searchParams[schCondCode.productionSpecId],{Environment.NewLine}";
+                case "FROM_DATE": return $"FROM_DATE: props.searchParams[schCondCode.startDate],";
+                case "TO_DATE": return $"TO_DATE: props.searchParams[schCondCode.endDate],";
+                case "WIP_LINE_ID": return $"WIP_LINE_ID: props.searchParams[schCondCode.wipLineId] ?? '',";
+                case "LINE_ID": return $"LINE_ID: props.searchParams[schCondCode.productionLine] ?? '',";
+                case "PRODUCT_SPECIFICATION_ID": return $"PRODUCT_SPECIFICATION_ID: props.searchParams[schCondCode.productionSpecId],";
                 default:
                     return $"{inName}: props.searchParams.{ToCamelCase(inName)},";
             }
@@ -271,9 +271,9 @@ namespace TemplateGenerator
                 case "TO_DATE": return @"""TO_DATE"": ""20211031"",";
                 case "WIP_LINE_ID": return @"""WIP_LINE_ID"": ""4910195,2729094,2729095,2729096"",";
                 case "LINE_ID": return @"""LINE_ID"": ""VNHP-01-062,VNHP-01-070,VNHP-01-001,VNHP-01-002,VNHP-01-003,VNHP-01-001"",";
-                case "PRODUCT_SPECIFICATION_ID": return @"""PRODUCT_SPECIFICATION_ID"": """"";
+                case "PRODUCT_SPECIFICATION_ID": return @"""PRODUCT_SPECIFICATION_ID"": """",";
                 default:
-                    return $@"""{inName}"": """"";
+                    return $@"""{inName}"": """",";
             }
         }
 
