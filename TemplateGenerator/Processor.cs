@@ -318,7 +318,7 @@ namespace TemplateGenerator
                 case "ORGANIZATION_ID":
                     return @"inData.put(""ORGANIZATION_ID"", MDC.get(""userORGANIZATION_ID_LIST""));";
                 case "SCHEDULE_GROUP_ID":
-                    return @"inData.put(""LANGUSCHEDULE_GROUP_IDAGE_ID"", MDC.get(""userSCHEDULE_GROUP_ID_LIST""));";
+                    return @"inData.put(""SCHEDULE_GROUP_ID"", MDC.get(""userSCHEDULE_GROUP_ID_LIST""));";
                 default:
                     return "";
             }
