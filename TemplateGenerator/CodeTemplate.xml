@@ -900,10 +900,30 @@ export default {0}Container;
 
     //rest call
     {7}
+
+    //api 권한 등록
+    {8}
     ]]>
 	</api>
 
   <api_MDC_param>
 		<![CDATA[LANGUAGE_ID,USER_ID,FACILITY_CODE,ORGANIZATION_ID,SCHEDULE_GROUP_ID]]>
 	</api_MDC_param>  
+
+  <api_authority_query>
+		<![CDATA[
+insert into TB_COR_PROGRAM_API
+(
+program_id,
+api_uri,
+authority_type_code
+)
+values
+(
+'ALL', --상황에 맞게
+'{0}',
+'{1}'
+)    
+    ]]>
+	</api_authority_query>  
 </codes>

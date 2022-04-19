@@ -176,7 +176,6 @@ namespace TemplateGenerator
 
         public void CreateApi(string programName, string path, string inData, string route, string bizName)
         {
-            //{binding: '**',header: langUtils.getLangData(langSet.object,'**','**',),width: 50,visible: false,},
             var apiTemplate =
                 GetCData(
                     _doc?.Descendants(Enums.BaseCodeType.api.ToString())?
@@ -216,8 +215,17 @@ namespace TemplateGenerator
 
             var restCall = @$"http://LOCALHOST:8084/{apiName}{Environment.NewLine} {{{Environment.NewLine}{restPayload}{Environment.NewLine}}}";
 
+            var authQueryTemplate =
+                GetCData(
+                    _doc?.Descendants(Enums.BaseCodeType.api_authority_query.ToString())?
+                    .DescendantNodes()?
+                    .FirstOrDefault()?.ToString() ?? "");
+            var query = string.Format(authQueryTemplate, route, apiName.StartsWith("get") ? "R" : "W");
 
-            var result = string.Format(apiTemplate, route, apiName, param, lines, "Map<String,Object>[] result =", bizName, client, restCall);
+            var result = string.Format(apiTemplate, route, apiName, param, lines, "Map<String,Object>[] result =", bizName, client, restCall, query);
+
+
+
 
             CreateFile(
                 Path.Combine(path, $"{programName}_api.json"),

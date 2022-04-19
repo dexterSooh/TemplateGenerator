@@ -49,7 +49,9 @@ namespace TemplateGenerator
             /// <summary>
             /// ContainerComponent
             /// </summary>
-            js_container
+            js_container,
+
+            api_authority_query
         }
     }
 }
