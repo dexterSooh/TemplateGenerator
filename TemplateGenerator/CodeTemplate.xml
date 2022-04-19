@@ -221,7 +221,7 @@ const SearchAreaComponent = (props) => {{
   /* WIP LINE component ref */
   const wipLineRef = useRef();
   
-  /* 생산라인 콤보 데이터 */
+  /* WIP LINE 콤보 데이터 */
   const [wipLineCboData, setWipLineCboData] = useState([]);
   const assignWipLineCboData = (data) => {{
     wipLineCboDataSTRef.current = data;
@@ -230,7 +230,7 @@ const SearchAreaComponent = (props) => {{
   }};
   const wipLineCboDataSTRef = useRef(wipLineCboData);
 
-  /* 생산라인 selected value */
+  /* WIP LINE selected value */
   const [selectedWipLine, setSelectedWipLine] = useState([]);
   const assignSelectedWipLine = (data) => {{
     selectedWipLineSTRef.current = data;
